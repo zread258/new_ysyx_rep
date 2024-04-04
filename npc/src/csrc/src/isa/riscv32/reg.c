@@ -1,0 +1,42 @@
+/***************************************************************************************
+* Copyright (c) 2023-2024 modified by Ruidong Zhang
+* Thanks to Zihao Yu from Nanjing University 
+* and YSYX-project group
+***************************************************************************************/
+
+#include <isa.h>
+#include "Vysyx_23060184_SGC.h"
+#include "Vysyx_23060184_SGC___024root.h"
+#include "verilated.h"
+#include "verilated_vcd_c.h"
+
+const char *regs[] = {
+  "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
+  "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
+  "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+  "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
+};
+
+void update_cpu_reg() {
+  for (int i = 0; i < 32; i++) {
+    cpu.gpr[i] = dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
+  }
+}
+
+void isa_reg_display() {
+  for (int i = 0; i < 32; i++) {
+    word_t val = dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
+    printf("%s\t0x%08x\t%010u\n", regs[i], val, val);
+  }
+}
+
+word_t isa_reg_str2val(const char *s, bool *success) {
+  int i = 0;
+  for (i = 0; i < 32; i++) {
+    if (strcmp(s, regs[i]) == 0) {
+      *success = true;
+      break;
+    }
+  }
+  return dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
+}
