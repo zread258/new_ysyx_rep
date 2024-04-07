@@ -15,6 +15,8 @@
 `define FUNCT3_LENGTH    3
 // FUNC7 LENGTH
 `define FUNCT7_LENGTH    7
+// FUNC12 LENGTH
+`define FUNCT12_LENGTH   12
 
 `define OPCODE_LENGTH   7
 
@@ -64,6 +66,15 @@
 `define INST_LBU        3'b100     // LBU
 `define INST_LHU        3'b101     // LBU
 `define INST_LUI        7'b0110111 // LUI
+
+// CSR related instructions
+`define INST_CSR        7'b1110011 // CSR
+`define FUNC3_ECALL     3'b000     // ECALL
+`define FUNC12_ECALL    12'b0      // ECALL
+`define FUNC3_MRET      3'b000     // MRET
+`define FUNC12_MRET     12'h302    // MRET
+`define FUNC3_CSRRW     3'b001     // CSRRW
+`define FUNC3_CSRRS     3'b010     // CSRRS
 
 // B-Type instructions
 `define INST_BRANCH     7'b1100011 // BRANCH
@@ -118,14 +129,22 @@
 `define ALU_SRCB_LENGTH  2          // Bits of signal ALUSrcB
 `define ALU_SRCB_IMM    2'b00
 `define ALU_SRCB_RD2    2'b01
+`define ALU_SRCB_CSR    2'b10
+`define ALU_SRCB_ZERO   2'b11
 
 // ResultSrc Control Signals
-`define RESULT_SRC_LENGTH  2          // Bits of signal RegSrc
-`define RESULT_SRC_DEFAULT 2'b00      // Register default value
-`define RESULT_SRC_ALU     2'b01      // Register write source: ALU
-`define RESULT_SRC_MEM     2'b10      // Register write source: Immidiate Extension
-`define RESULT_SRC_PCPlus4 2'b11      // Register write source: NPC
+`define RESULT_SRC_LENGTH  3           // Bits of signal RegSrc
+`define RESULT_SRC_DEFAULT 3'b000      // Register default value
+`define RESULT_SRC_ALU     3'b001      // Register write source: ALU
+`define RESULT_SRC_MEM     3'b010      // Register write source: Immidiate Extension
+`define RESULT_SRC_PCPlus4 3'b011      // Register write source: NPC
+`define RESULT_SRC_CSR     3'b100      // Register write source: CSR
 // `define RESULT_SRC_MEM     2'b10      // Register write source: Data Memory
+
+// CsrSrc Control Signals
+`define CSR_SRC_LENGTH  2           // Bits of signal CsrSrc
+`define CSR_SRC_PC      2'b00
+`define CSR_SRC_ALU     2'b01
 
 // ExtOp Control Signals
 `define EXT_OP_LENGTH   3           // Bits of Signal ExtOp
@@ -142,6 +161,7 @@
 `define NPC_OP_JAL      3'b010     // Next instruction: JAL
 `define NPC_OP_BRANCH   3'b011     // Next instruction: BEQ
 `define NPC_OP_JALR     3'b100     // Next instruction: JALR
+`define NPC_OP_CSR      3'b101
 
 // DataMem WriteMask Signals
 `define WMASK_LENGTH    8
@@ -156,3 +176,10 @@
 `define READ_BYTE       3'b010
 `define READ_HALFU      3'b011
 `define READ_BYTEU      3'b100
+
+// CSR Register Address
+// `define CSR_ADDR_LENGTH 9
+// `define CSR_MSTATUS     12'h300
+// `define CSR_MTVEC       12'h305
+// `define CSR_MEPC        12'h341
+// `define CSR_MCAUSE      12'h342

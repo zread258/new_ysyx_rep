@@ -231,6 +231,7 @@ sword_t eval(int p, int q) {
           Assert(success, "Register %s not exists!", tokens[p].str + 1);
         }        
       }
+      memset(tokens[p].str, '\0', sizeof(tokens[p].str));
       return val;
       break;
     default:

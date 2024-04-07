@@ -20,6 +20,7 @@
 
 typedef struct {
   word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
+  word_t mepc, mtvec, mstatus, mcause;
   vaddr_t pc;
 } riscv32_CPU_state;
 

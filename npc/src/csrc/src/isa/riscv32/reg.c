@@ -5,6 +5,7 @@
 ***************************************************************************************/
 
 #include <isa.h>
+#include "local-include/reg.h"
 #include "Vysyx_23060184_SGC.h"
 #include "Vysyx_23060184_SGC___024root.h"
 #include "verilated.h"
@@ -21,6 +22,10 @@ void update_cpu_reg() {
   for (int i = 0; i < 32; i++) {
     cpu.gpr[i] = dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
   }
+  cpu.mstatus = csr(0x300);
+  cpu.mtvec = csr(0x305);
+  cpu.mepc = csr(0x341);
+  cpu.mcause = csr(0x342);
 }
 
 void isa_reg_display() {
@@ -39,4 +44,21 @@ word_t isa_reg_str2val(const char *s, bool *success) {
     }
   }
   return dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
+}
+
+word_t csr_reg_str2val(const char *s, bool *success) {
+  if (strcmp(s, "mepc") == 0) {
+      *success = true;
+      return cpu.mepc;
+  } else if (strcmp(s, "mtvec") == 0) {
+      *success = true;
+      return cpu.mtvec;
+  } else if (strcmp(s, "mstatus") == 0) {
+      *success = true;
+      return cpu.mstatus;
+  } else if (strcmp(s, "mcause") == 0) {
+      *success = true;
+      return cpu.mcause;
+  }
+  return 0;
 }

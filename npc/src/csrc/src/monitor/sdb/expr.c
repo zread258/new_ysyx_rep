@@ -27,6 +27,7 @@
 
 // word_t vaddr_read(vaddr_t addr, int len);
 word_t isa_reg_str2val(const char *s, bool *success);
+word_t csr_reg_str2val(const char *s, bool *success);
 word_t get_curpc();
 word_t paddr_read(word_t addr, int len);
 
@@ -228,8 +229,13 @@ sword_t eval(int p, int q) {
       success = false;
       val = isa_reg_str2val(tokens[p].str + 1, &success);
       if (!success) {
-        Assert(success, "Register %s not exists!", tokens[p].str + 1);
+        val = csr_reg_str2val(tokens[p].str + 1, &success);
+        if (!success) {
+          Log("Register %s not exists!", tokens[p].str + 1);
+          break;
+        }
       }
+      memset(tokens[p].str, '\0', sizeof(tokens[p].str));
       return val;
       break;
     default:

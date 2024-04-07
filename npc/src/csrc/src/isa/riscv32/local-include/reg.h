@@ -17,6 +17,7 @@
 #define __RISCV_REG_H__
 
 #include <common.h>
+#include "Vysyx_23060184_SGC___024root.h"
 
 static inline int check_reg_idx(int idx) {
   IFDEF(CONFIG_RT_CHECK, assert(idx >= 0 && idx < MUXDEF(CONFIG_RVE, 16, 32)));
@@ -24,6 +25,22 @@ static inline int check_reg_idx(int idx) {
 }
 
 #define gpr(idx) (cpu.gpr[check_reg_idx(idx)])
+
+static inline uint32_t csr(int idx) {
+  switch (idx)
+  {
+    case 0x300:
+      return dut->rootp->ysyx_23060184_SGC__DOT__CSReg__DOT__csr[0x300];
+    case 0x305:
+      return dut->rootp->ysyx_23060184_SGC__DOT__CSReg__DOT__csr[0x305];
+    case 0x341:
+      return dut->rootp->ysyx_23060184_SGC__DOT__CSReg__DOT__csr[0x341];
+    case 0x342:
+      return dut->rootp->ysyx_23060184_SGC__DOT__CSReg__DOT__csr[0x342];
+  }
+  panic("Unknown csr");
+  return 0;
+} 
 
 static inline const char* reg_name(int idx) {
   extern const char* regs[];

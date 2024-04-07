@@ -5,6 +5,7 @@ module ysyx_23060184_NPC #(NPC_OP_LENGTH = 3, DATA_WIDTH = 32) (
     input [DATA_WIDTH - 1:0]        ALUResult,
     input [DATA_WIDTH - 1:0]        Inst,
     input [19:0]                    Imm20,
+    input [DATA_WIDTH - 1:0]        CsrRead,
     output reg [DATA_WIDTH - 1:0]   NPC
 );
     reg [DATA_WIDTH - 1:0] PCPlus4;
@@ -26,6 +27,8 @@ module ysyx_23060184_NPC #(NPC_OP_LENGTH = 3, DATA_WIDTH = 32) (
                 NPC <= ALUResult;
             `NPC_OP_BRANCH:
                 NPC <= PC + Branch_Offset;
+            `NPC_OP_CSR:
+                NPC <= CsrRead;
             // `NPC_OP_OFFSET:
             //     NPC <= {PCPlus4 + {{14{Imm16[15]}}, {Imm16, 2'b00}}};
             default:

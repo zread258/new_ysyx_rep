@@ -2,19 +2,24 @@ module ysyx_23060184_ControlUnit (
     input [`OPCODE_LENGTH - 1:0] opcode,
     input [`FUNCT3_LENGTH - 1:0]  funct3,
     input [`FUNCT7_LENGTH - 1:0]  funct7,
+    input [`FUNCT12_LENGTH - 1:0] funct12,
     input Flag,
     input Zero,
     output [`NPC_OP_LENGTH - 1:0] Npc_op,
     output RegWrite,
     output MemRead,
     output MemWrite,
+    output CsrWrite,
+    output ecall,
+    output mret,
     output [`WMASK_LENGTH - 1:0] Wmask,
     output [`ROPCODE_LENGTH - 1:0] Ropcode,
     output [`RESULT_SRC_LENGTH - 1:0] ResultSrc,
     output [`EXT_OP_LENGTH - 1:0] ExtOp,
     output [`ALU_SRCA_LENGTH - 1:0] ALUSrcA,
     output [`ALU_SRCB_LENGTH - 1:0] ALUSrcB,
-    output [`ALU_OP_LENGTH - 1:0]   ALUOp
+    output [`ALU_OP_LENGTH - 1:0]   ALUOp,
+    output [`CSR_SRC_LENGTH - 1:0]  CsrSrc
 );
     wire auipc, jalr, jal, lui;
 
@@ -27,6 +32,8 @@ module ysyx_23060184_ControlUnit (
     wire load, lw, lh, lb, lhu, lbu;
 
     wire store, sw, sh, sb;
+
+    wire csrrw, csrrs;
 
     // I-Type instructions
     assign itype = (opcode == `INST_I_TYPE) ? 1 : 0;
@@ -51,6 +58,18 @@ module ysyx_23060184_ControlUnit (
                 (funct3 == `FUNC3_ANDI) ? 1 : 0 : 0;
     assign xori =  (opcode == `INST_I_TYPE) ? 
                 (funct3 == `FUNC3_XORI) ? 1 : 0 : 0;
+
+    // CSR related instructions
+    assign ecall = (opcode == `INST_CSR) ?
+                (funct3 == `FUNC3_ECALL) ? 
+                (funct12 == `FUNC12_ECALL) ? 1 : 0 : 0 : 0;
+    assign mret = (opcode == `INST_CSR) ?
+                (funct3 == `FUNC3_MRET) ? 
+                (funct12 == `FUNC12_MRET) ? 1 : 0 : 0 : 0;
+    assign csrrw = (opcode == `INST_CSR) ? 
+                (funct3 == `FUNC3_CSRRW) ? 1 : 0 : 0;
+    assign csrrs = (opcode == `INST_CSR) ?
+                (funct3 == `FUNC3_CSRRS) ? 1 : 0 : 0;
 
 
     assign jal = (opcode == `INST_JAL) ? 1 : 0;
@@ -130,7 +149,7 @@ module ysyx_23060184_ControlUnit (
 
 
 
-    assign RegWrite = (lui || itype || auipc || jalr || jal || load || rtype) ? 1 : 0;
+    assign RegWrite = (lui || itype || auipc || jalr || jal || load || rtype || csrrw || csrrs || ecall) ? 1 : 0;
 
     assign MemRead = (load) ? 1 : 0;
 
@@ -148,9 +167,14 @@ module ysyx_23060184_ControlUnit (
 
     assign ALUSrcA = (auipc) ? `ALU_SRCA_PC :
             (itype || jalr || store || load || branch || rtype) ? `ALU_SRCA_RD1 : 
-            (lui) ? `ALU_SRCA_ZERO : `ALU_SRCA_ZERO;
+            (lui) ? `ALU_SRCA_ZERO : 
+            (csrrs || csrrw) ? `ALU_SRCA_RD1 :
+            `ALU_SRCA_ZERO;
 
-    assign ALUSrcB = (lui || itype || jal || auipc || store || load) ? `ALU_SRCB_IMM : `ALU_SRCB_RD2;
+    assign ALUSrcB = (lui || itype || jal || auipc || store || load) ? `ALU_SRCB_IMM : 
+            (csrrs) ? `ALU_SRCB_CSR : 
+            (csrrw) ? `ALU_SRCB_ZERO :
+            `ALU_SRCB_RD2;
 
     assign ALUOp = (addi || jalr || load || lui || auipc || add) ? `ALU_OP_ADD :
             (store) ? `ALU_OP_ADD :
@@ -163,11 +187,15 @@ module ysyx_23060184_ControlUnit (
             (sll || slli) ? `ALU_OP_SLL :
             (srl || srli) ? `ALU_OP_SRL :
             (sra || srai) ? `ALU_OP_SRA :
-            (rxor || xori) ? `ALU_OP_XOR : `ALU_OP_ADD;
+            (rxor || xori) ? `ALU_OP_XOR : 
+            (csrrw) ? `ALU_OP_ADD : 
+            (csrrs) ? `ALU_OP_OR :
+            `ALU_OP_ADD;
 
     assign ResultSrc = (itype || auipc || lui || rtype) ? `RESULT_SRC_ALU :
             (load) ? `RESULT_SRC_MEM :
             (jal || jalr) ? `RESULT_SRC_PCPlus4 :
+            (csrrw || csrrs) ? `RESULT_SRC_CSR :
             `RESULT_SRC_DEFAULT;
 
     assign ExtOp = (lui || auipc) ? `EXT_OP_U :
@@ -184,7 +212,13 @@ module ysyx_23060184_ControlUnit (
     assign Npc_op = (lui || auipc || addi) ? `NPC_OP_NEXT :
             (jal) ? `NPC_OP_JAL :
             (jalr) ? `NPC_OP_JALR : 
-            (branch & branch_flag) ? `NPC_OP_BRANCH : 
+            (branch & branch_flag) ? `NPC_OP_BRANCH :
+            (ecall || mret) ? `NPC_OP_CSR :
             `NPC_OP_NEXT;
+
+    assign CsrSrc = (ecall) ? `CSR_SRC_PC :
+            (csrrw || csrrs) ? `CSR_SRC_ALU : 0;
+
+    assign CsrWrite = (csrrw || csrrs) ? 1 : 0;
 
 endmodule 

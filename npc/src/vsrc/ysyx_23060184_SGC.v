@@ -25,11 +25,17 @@ module ysyx_23060184_SGC(
    reg [`ALU_SRCB_LENGTH - 1:0]     ALUSrcB;
    reg [`DATA_WIDTH - 1:0]          ReadData;
    reg [`ROPCODE_LENGTH - 1:0]      Ropcode;
+   reg [`CSR_SRC_LENGTH - 1:0]      CsrSrc;
+   reg [`DATA_WIDTH - 1:0]          CsrRead;
+   reg [`DATA_WIDTH - 1:0]          CsrWdata;
 
    wire RegWrite;
+   wire CsrWrite;
    wire MemRead;
    wire MemWrite;
    wire Zero;
+   wire ecall;
+   wire mret;
 
    ysyx_23060184_DataMem DataMem (
       .clk(clk),
@@ -51,6 +57,7 @@ module ysyx_23060184_SGC(
       .opcode(inst[6:0]),
       .funct3(inst[14:12]),
       .funct7(inst[31:25]),
+      .funct12(inst[31:20]),
       .Npc_op(Npc_op),
       .Zero(Zero),
       .Flag(ALUResult[0]),
@@ -63,7 +70,11 @@ module ysyx_23060184_SGC(
       .Wmask(Wmask),
       .Ropcode(Ropcode),
       .MemRead(MemRead),
-      .MemWrite(MemWrite)
+      .MemWrite(MemWrite),
+      .CsrWrite(CsrWrite),
+      .ecall(ecall),
+      .CsrSrc(CsrSrc),
+      .mret(mret)
    );
    ysyx_23060184_PC PC (
       .clk(clk),
@@ -78,6 +89,7 @@ module ysyx_23060184_SGC(
       .Inst(inst),
       .ALUResult(ALUResult),
       .Imm20(inst[31:12]),
+      .CsrRead(CsrRead),
       .NPC(Npc)
    );
    ysyx_23060184_Extend Extend (
@@ -99,6 +111,7 @@ module ysyx_23060184_SGC(
       .PC(pc),
       .ALUResult(ALUResult),
       .ReadData(ReadData),
+      .CsrRead(CsrRead),
       .Result(Result)
    );
 
@@ -113,6 +126,7 @@ module ysyx_23060184_SGC(
       .ALUSrcB(ALUSrcB),
       .ImmExt(ImmExt),
       .RD2(RD2),
+      .CsrRead(CsrRead),
       .SrcB(SrcB)
    );   
 
@@ -124,8 +138,22 @@ module ysyx_23060184_SGC(
       .raddr1(inst[19:15]),
       .raddr2(inst[24:20]),
       .rdata1(RD1),
-      .rdata2(RD2)
+      .rdata2(RD2),
+      .ecall(ecall)
    );
+
+   ysyx_23060184_CSReg CSReg (
+      .clk(clk),
+      .ecall(ecall),
+      .mret(mret),
+      .pc(pc),
+      .wdata(ALUResult),
+      .waddr(inst[29:20]), // TODO: Expand to 12 bits addr
+      .wen(CsrWrite),
+      .raddr(inst[29:20]),
+      .rdata(CsrRead)
+   );
+
    ysyx_23060184_Decode Deocde (
       .clk(clk),
       .inst(inst)

@@ -3,12 +3,14 @@ module ysyx_23060184_Mux_Result_Src (
     input [`DATA_WIDTH - 1:0]           PC,
     input [`DATA_WIDTH - 1:0]           ALUResult,
     input [`DATA_WIDTH - 1:0]           ReadData,
+    input [`DATA_WIDTH - 1:0]           CsrRead,
     output reg [`DATA_WIDTH - 1:0]      Result
 );
-    MuxKey #(3, `RESULT_SRC_LENGTH, 32) i0 (Result, ResultSrc, {
+    MuxKey #(4, `RESULT_SRC_LENGTH, 32) i0 (Result, ResultSrc, {
         `RESULT_SRC_PCPlus4,  PC + 4,
         `RESULT_SRC_ALU,      ALUResult,
-        `RESULT_SRC_MEM,      ReadData
+        `RESULT_SRC_MEM,      ReadData,
+        `RESULT_SRC_CSR,      CsrRead
     });
 endmodule
 
@@ -30,11 +32,14 @@ module ysyx_23060184_Mux_ALUSrcB (
     input [`ALU_SRCB_LENGTH - 1:0]   ALUSrcB,
     input [`DATA_WIDTH - 1:0]        ImmExt,
     input [`DATA_WIDTH - 1:0]        RD2,
+    input [`DATA_WIDTH - 1:0]        CsrRead,
     output reg [`DATA_WIDTH - 1:0]   SrcB
 );
-    MuxKey #(2, `ALU_SRCB_LENGTH, 32) i0 (SrcB, ALUSrcB, {
+    MuxKey #(4, `ALU_SRCB_LENGTH, 32) i0 (SrcB, ALUSrcB, {
         `ALU_SRCB_IMM, ImmExt,
-        `ALU_SRCB_RD2, RD2
+        `ALU_SRCB_RD2, RD2,
+        `ALU_SRCB_CSR, CsrRead,
+        `ALU_SRCB_ZERO, 32'b0
     });
 
 endmodule
