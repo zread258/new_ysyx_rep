@@ -66,7 +66,7 @@ run: $(BIN)
 gdb: $(BIN)
 	@gdb --args $^ $(NPCFLAGS) $(ARGS) $(IMG) 
 
-waves: $(BIN) run
+waves: $(BIN)
 	gtkwave $(BUILD_DIR)/waveform.vcd config.gtkw
 
 clean:
