@@ -72,6 +72,10 @@ waves: $(BIN)
 clean:
 	rm -rf $(BUILD_DIR)
 
+count:
+	@echo "Statisticing lines of codes in .v files!"
+	@find . -name "*.v" | xargs wc -l
+
 .PHONY: default all clean run waves
 
 sim:
