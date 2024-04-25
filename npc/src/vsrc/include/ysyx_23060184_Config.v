@@ -3,8 +3,8 @@
  * Define: LUI, ADDI, LW, SW, JAL, JALR
  */
 
+// CPU Data Width
 `define DATA_WIDTH      32
-
 // Instruction Memory Capacity
 `define IM_LENGTH       1023
 // Data Memory Capacity
@@ -17,8 +17,10 @@
 `define FUNCT7_LENGTH    7
 // FUNC12 LENGTH
 `define FUNCT12_LENGTH   12
-
-`define OPCODE_LENGTH   7
+// OPCODE LENGTH
+`define OPCODE_LENGTH    7
+// ACCESS ERROR WIDTH
+`define ACERR_WIDTH      2
 
 // R-Type instructions
 `define INST_R_TYPE     7'b0110011  // R-Type opcode, decode via function code

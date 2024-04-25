@@ -1,10 +1,13 @@
-/* The Steins Gate Computer Project started on January 22nd, 
-   relying on YSYX Project. This computer designing based on 
+`include "ysyx_23060184_Config.v"
+
+/* The Steins Gate Computer Project started on January 22nd, 2024,
+   which is relied on YSYX Project. This CPU design is based on 
    RISC-V Instruction Set Architecture.
 */
+
 module ysyx_23060184_SGC(
-      input clk, 
-      input resetn,
+      input                          clk, 
+      input                          resetn,
       output reg [`DATA_WIDTH - 1:0] pc,
       output reg [`DATA_WIDTH - 1:0] inst
    );
@@ -36,10 +39,21 @@ module ysyx_23060184_SGC(
    wire Zero;
    wire ecall;
    wire mret;
+   wire Pvalid;
+   wire Ivalid;
+   // wire Iready;
+   wire Evalid;
+   // wire Eready;
+   wire Wvalid;
+   // wire Wready;
 
    ysyx_23060184_DataMem DataMem (
       .clk(clk),
+      .resetn(resetn),
       .raddr(ALUResult),
+      .Evalid(Evalid),
+      .Wvalid(Wvalid),
+      // .Wready(Wready),
       .MemRead(MemRead),
       .MemWrite(MemWrite),
       .wmask(Wmask),
@@ -49,7 +63,10 @@ module ysyx_23060184_SGC(
    );
 
    ysyx_23060184_InstMem InstMem (
+      .clk(clk),
       .A(pc),
+      .Pvalid(Pvalid),
+      .Ivalid(Ivalid),
       .RD(inst)
    );
 
@@ -79,6 +96,8 @@ module ysyx_23060184_SGC(
    ysyx_23060184_PC PC (
       .clk(clk),
       .rstn(resetn),
+      .Wvalid(Wvalid),
+      .Pvalid(Pvalid),
       .NPC(Npc),
       .PC(pc)
    );
@@ -139,6 +158,10 @@ module ysyx_23060184_SGC(
       .raddr2(inst[24:20]),
       .rdata1(RD1),
       .rdata2(RD2),
+      .Ivalid(Ivalid),
+      // .Wready(Wready),
+      .Evalid(Evalid),
+      // .Eready(Eready),
       .ecall(ecall)
    );
 

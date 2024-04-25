@@ -7,8 +7,10 @@
 #include <memory/paddr.h>
 #include <isa.h>
 
+#ifdef CONFIG_WAVEVCD
 static VerilatedContext *contextp = NULL;
 static VerilatedVcdC *tfp = NULL;
+#endif
 
 Vysyx_23060184_SGC *dut;
 
@@ -17,33 +19,45 @@ static bool npc_halt_ret = false;
 void step_and_dump_wave() {
   dut->clk = 1;
   dut->eval();
+#ifdef CONFIG_WAVEVCD
   contextp->timeInc(1);
   tfp->dump(contextp->time());
+#endif
   dut->clk = 0;
   dut->eval();
+#ifdef CONFIG_WAVEVCD
   contextp->timeInc(1);
   tfp->dump(contextp->time());
+#endif
 }
 
 void sim_init() {
+  dut = new Vysyx_23060184_SGC;
+#ifdef CONFIG_WAVEVCD
+  Verilated::traceEverOn(true); // Enable Wavetrace
   contextp = new VerilatedContext;
   tfp = new VerilatedVcdC;
-  dut = new Vysyx_23060184_SGC;
   contextp->traceEverOn(true);
   dut->trace(tfp, 0);
   tfp->open("/home/csardas/ysyx-workbench/npc/build/waveform.vcd");
+#endif
 }
 
 void sim_exit() {
   step_and_dump_wave();
   dut->clk = 0;
   dut->eval();
+#ifdef CONFIG_WAVEVCD
   contextp->timeInc(1);
   tfp->dump(contextp->time());
   tfp->close();
+#endif
 }
 
 void machine_init() {
+  dut->resetn = 0;
+  step_and_dump_wave();
+  step_and_dump_wave();
   dut->resetn = 1;
 }
 

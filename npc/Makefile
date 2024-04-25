@@ -8,6 +8,7 @@ INC_PATH += /usr/lib/llvm-11/include
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc -trace \
 				-O3 --x-assign fast --x-initial fast --noassert
+VERILATOR_INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/vsrc/include
 
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
@@ -56,6 +57,7 @@ $(BIN): $(VSRCS) $(CSRCS)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
 		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
+		-I$(VERILATOR_INC_PATH) \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN)) 
 
 all: default
@@ -67,7 +69,7 @@ gdb: $(BIN)
 	@gdb --args $^ $(NPCFLAGS) $(ARGS) $(IMG) 
 
 waves: $(BIN)
-	gtkwave $(BUILD_DIR)/waveform.vcd config.gtkw
+	gtkwave $(BUILD_DIR)/waveform.vcd $(BUILD_DIR)/config.gtkw
 
 clean:
 	rm -rf $(BUILD_DIR)

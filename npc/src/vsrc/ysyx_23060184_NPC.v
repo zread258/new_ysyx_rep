@@ -1,5 +1,5 @@
 module ysyx_23060184_NPC #(NPC_OP_LENGTH = 3, DATA_WIDTH = 32) (
-    input resetn,
+    input                           resetn,
     input [NPC_OP_LENGTH - 1:0]     Npc_op,
     input [DATA_WIDTH - 1:0]        PC,
     input [DATA_WIDTH - 1:0]        ALUResult,

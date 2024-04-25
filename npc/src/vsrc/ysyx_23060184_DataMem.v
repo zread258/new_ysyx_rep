@@ -1,32 +1,88 @@
-`define READ_WORD       3'b000
-`define READ_HALF       3'b001
-`define READ_BYTE       3'b010
-`define READ_HALFU      3'b011
-`define READ_BYTEU      3'b100
-
 module ysyx_23060184_DataMem (
-    input clk,
-    input [31:0] raddr,
-    input MemRead,
-    input MemWrite,
-    input [2:0] ropcode,
-    input [7:0] wmask,
-    input [31:0] wdata,
-    output reg [31:0] result
+    input                               clk,
+    input                               resetn,
+    input [`DATA_WIDTH - 1:0]           raddr,
+    input                               Evalid,
+    // output reg                          Wready,
+    output reg                          Wvalid,
+    input                               MemRead,
+    input                               MemWrite,
+    input [`RESULT_SRC_LENGTH - 1:0]    ropcode,
+    input [`WMASK_LENGTH - 1:0]         wmask,
+    input [`DATA_WIDTH - 1:0]           wdata,
+    output reg [`DATA_WIDTH - 1:0]      result
 );
 
-    import "DPI-C" function int pmem_read(input int raddr);
-    import "DPI-C" function void pmem_write(
-    input int waddr, input int wdata, input byte wmask);
+    reg [`DATA_WIDTH - 1:0]             rdata;
+    reg                                 arvalid;
+    reg                                 aready;
+    reg [`ACERR_WIDTH - 1:0]            rresp;
+    reg                                 rvalid;
+    reg                                 rready;
+    reg                                 awvalid;
+    reg                                 awready;
+    reg                                 wvalid;
+    reg                                 wready;
+    reg                                 bready;
+    reg                                 bvalid;
+    reg [`ACERR_WIDTH - 1:0]            bresp;
 
-    reg [31:0] rdata;
+    ysyx_23060184_DataSRAM DataSRAM (
+        .clk(clk),
+        .araddr(raddr),
+        .arvalid(arvalid),
+        .aready(aready),
+        .rdata(rdata),
+        .rresp(rresp),
+        .rvalid(rvalid),
+        .rready(rready),
+        .awaddr(raddr),
+        .awvalid(awvalid),
+        .awready(awready),
+        .wdata(wdata),
+        .wstrb(wmask),
+        .wvalid(wvalid),
+        .wready(wready),
+        .bready(bready),
+        .bresp(bresp),
+        .bvalid(bvalid)
+    );
 
-    always @(negedge clk) begin
-        if (MemRead) begin
-            rdata <= pmem_read(raddr);
-        end
-        if (MemWrite) begin // when MemWrite is high
-            pmem_write(raddr, wdata, wmask);
+    always @(posedge clk) begin
+        if (!resetn) begin
+            // Wready = 1;
+            // Wvalid <= 1;
+        end else begin
+            Wvalid <= 0;
+            if (Evalid) begin
+                // Wready <= 1;
+                if (MemRead) begin
+                    arvalid <= 1;
+                    if (arvalid && aready) begin
+                        rready <= 1;
+                        if (rvalid && rready) begin
+                            arvalid <= 0;
+                            rready <= 0;
+                            Wvalid <= 1;
+                        end
+                    end
+                end else if (MemWrite) begin
+                    awvalid <= 1;
+                    if (awvalid && awready) begin
+                        wvalid <= 1;
+                        if (wvalid && wready) begin
+                            awvalid <= 0;
+                            wvalid <= 0;
+                            bready <= 1;
+                            if (bvalid && bready) begin
+                                bready <= 0;
+                            end
+                            Wvalid <= 1;
+                        end
+                    end
+                end
+                Wvalid <= 1;
+            end
         end
     end
 
