@@ -57,6 +57,7 @@ word_t inst_fetch(paddr_t pc) {
 word_t paddr_read(paddr_t addr, int len) {
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
+  // Log("paddr_read");
   out_of_bound(addr);
   return 0;
 }
@@ -64,5 +65,6 @@ word_t paddr_read(paddr_t addr, int len) {
 void paddr_write(paddr_t addr, int len, word_t data) {
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
+  // Log("paddr_write");
   out_of_bound(addr);
 }

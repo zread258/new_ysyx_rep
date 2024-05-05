@@ -5,6 +5,7 @@
 ***************************************************************************************/
 
 #include <memory/paddr.h>
+#include <cpu/difftest.h>
 #include <isa.h>
 
 #ifdef CONFIG_WAVEVCD
@@ -59,6 +60,7 @@ void machine_init() {
   step_and_dump_wave();
   step_and_dump_wave();
   dut->resetn = 1;
+  // difftest_skip_ref();
 }
 
 word_t get_curpc() {
@@ -76,6 +78,9 @@ extern "C" void sim_break() {
 
 extern "C" int pmem_read(int raddr) {
   // always return 4 bytes data whose address is `raddr & ~0x3u`
+  if (raddr == 0x00000020) {
+    Log("Read Error Here! @raddr = 0x00000020");
+  }
   return paddr_read(raddr, 4);
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {

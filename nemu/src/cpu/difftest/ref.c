@@ -19,10 +19,11 @@
 #include <difftest-def.h>
 #include <memory/paddr.h>
 
-#define NR_GPR 32
+#define NR_GPR MUXDEF(CONFIG_RVE, 16, 32)
 
 struct diff_context_t {
-  word_t gpr[NR_GPR];
+  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
+  word_t mepc, mtvec, mstatus, mcause;
   word_t pc;
 };
 
@@ -41,6 +42,7 @@ static void write_back_reg() {
     ref.gpr[i] = cpu.gpr[i];
   }
   ref.pc = cpu.pc;
+  // printf("(nemu side)cpu.pc = 0x%x\nref.pc = 0x%x\n", cpu.pc, ref.pc);
 }
 
 void diff_set_regs(void* diff_context) {
@@ -48,15 +50,20 @@ void diff_set_regs(void* diff_context) {
   for (int i = 0; i < NR_GPR; i++) {
     cpu.gpr[i] = (sword_t)ctx->gpr[i];
   }
-  cpu.pc = ctx->pc;
+  if (ctx->pc != 0x00000000) cpu.pc = ctx->pc;
+  // printf("diff_set_regs_pc = %x\n", cpu.pc);
 }
 
 void diff_get_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
+  // printf("(nemu side) sizeof(ctx) = %ld\n", sizeof(ctx));
+  // printf("(nemu side) BEFORE ctx->pc = 0x%08x\n", ctx->pc);
   for (int i = 0; i < NR_GPR; i++) {
     ctx->gpr[i] = ref.gpr[i];
   }
+  // printf("(nemu side) address of ctx->pc = %p\n", &(ctx->pc));
   ctx->pc = ref.pc;
+  // printf("(nemu side) AFTER ctx->pc = 0x%x\n", ctx->pc);
 }
 
 void diff_step(uint64_t n) {
@@ -65,6 +72,9 @@ void diff_step(uint64_t n) {
   s.pc = ref.pc;
   s.snpc = ref.pc;
   for (int i = 0; i < n; i++) {
+    // if (cpu.pc == 0x00000000) {
+    //   printf("Here!\n");
+    // }
     write_back_reg();
     isa_exec_once(&s);
     cpu.pc = s.dnpc;
@@ -87,6 +97,7 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
   if (direction == DIFFTEST_TO_REF) {
     diff_set_regs(dut);
   } else {
+    // printf("(nemu side) address of dut = %p\n", dut);
     diff_get_regs(dut);
   }
 }
@@ -105,4 +116,6 @@ __EXPORT void difftest_init(int port) {
   /* Perform ISA dependent initialization. */
   init_isa();
   ref_init();
+  // printf("difftest_init\n");
+  // printf("cpu.pc = 0x%x\n", cpu.pc);
 }

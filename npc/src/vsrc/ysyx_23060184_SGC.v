@@ -41,11 +41,12 @@ module ysyx_23060184_SGC(
    wire mret;
    wire Pvalid;
    wire Ivalid;
-   // wire Iready;
+   wire Iready;
    wire Evalid;
-   // wire Eready;
+   wire Eready;
    wire Wvalid;
-   // wire Wready;
+   wire Wready;
+   wire Pready;
 
    ysyx_23060184_DataMem DataMem (
       .clk(clk),
@@ -53,7 +54,8 @@ module ysyx_23060184_SGC(
       .raddr(ALUResult),
       .Evalid(Evalid),
       .Wvalid(Wvalid),
-      // .Wready(Wready),
+      .Wready(Wready),
+      .Pready(Pready),
       .MemRead(MemRead),
       .MemWrite(MemWrite),
       .wmask(Wmask),
@@ -64,9 +66,12 @@ module ysyx_23060184_SGC(
 
    ysyx_23060184_InstMem InstMem (
       .clk(clk),
+      .resetn(resetn),
       .A(pc),
       .Pvalid(Pvalid),
+      .Eready(Eready),
       .Ivalid(Ivalid),
+      .Iready(Iready),
       .RD(inst)
    );
 
@@ -98,10 +103,13 @@ module ysyx_23060184_SGC(
       .rstn(resetn),
       .Wvalid(Wvalid),
       .Pvalid(Pvalid),
+      .Iready(Iready),
+      .Pready(Pready),
       .NPC(Npc),
       .PC(pc)
    );
    ysyx_23060184_NPC NPC (
+      .clk(clk),
       .resetn(resetn),
       .Npc_op(Npc_op),
       .PC(pc),
@@ -151,6 +159,7 @@ module ysyx_23060184_SGC(
 
    ysyx_23060184_RegFile RegFile (
       .clk(clk),
+      .resetn(resetn),
       .wdata(Result),
       .waddr(inst[11:7]),
       .wen(RegWrite),
@@ -159,9 +168,11 @@ module ysyx_23060184_SGC(
       .rdata1(RD1),
       .rdata2(RD2),
       .Ivalid(Ivalid),
-      // .Wready(Wready),
+      .Wvalid(Wvalid),
+      .Pready(Pready),
+      .Wready(Wready),
       .Evalid(Evalid),
-      // .Eready(Eready),
+      .Eready(Eready),
       .ecall(ecall)
    );
 

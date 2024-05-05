@@ -25,6 +25,8 @@ CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
+word_t old_inst = 0;
+bool start = false;
 
 bool check_wp();
 
@@ -42,9 +44,13 @@ static void trace_and_difftest() {
 }
 
 static void exec_once() {
-  step_and_dump_wave();
-  cpu.pc = get_curpc();
-  update_cpu_reg();
+  while (old_inst == get_inst()) {
+    step_and_dump_wave();
+    cpu.pc = get_curpc();
+  } // multi-cycle instruction support
+  if (cpu.pc != 0)  start = true; // start to update cpu reg
+  old_inst = get_inst();
+  if (start)  update_cpu_reg();
 #ifdef CONFIG_ITRACE
   char *log = (char*)malloc(1024);
   char *p = log;
@@ -68,10 +74,12 @@ static void exec_once() {
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, 100,
       cpu.pc, inst, ilen);
+  
+  printf("%s\n", log);
 #else
   p[0] = '\0'; // the upstream llvm does not support loongarch32r
 #endif
-  printf("%s\n", log);
+  
 #else
   word_t cur_inst = get_inst();
   if (cur_inst == 0x00100073) npc_state.state = NPC_END;
@@ -81,7 +89,7 @@ static void exec_once() {
 static void execute(uint64_t n) {
   for (;n > 0; n --) {
     exec_once();
-    trace_and_difftest();
+    if (start) trace_and_difftest();
     if (npc_state.state != NPC_RUNNING) break;
     IFDEF(CONFIG_DEVICE, device_update());
   }

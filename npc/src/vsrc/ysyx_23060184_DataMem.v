@@ -2,8 +2,9 @@ module ysyx_23060184_DataMem (
     input                               clk,
     input                               resetn,
     input [`DATA_WIDTH - 1:0]           raddr,
+    input                               Pready,
     input                               Evalid,
-    // output reg                          Wready,
+    output reg                          Wready,
     output reg                          Wvalid,
     input                               MemRead,
     input                               MemWrite,
@@ -50,39 +51,54 @@ module ysyx_23060184_DataMem (
 
     always @(posedge clk) begin
         if (!resetn) begin
-            // Wready = 1;
+            Wready <= 1;
             // Wvalid <= 1;
-        end else begin
-            Wvalid <= 0;
-            if (Evalid) begin
-                // Wready <= 1;
-                if (MemRead) begin
-                    arvalid <= 1;
-                    if (arvalid && aready) begin
-                        rready <= 1;
-                        if (rvalid && rready) begin
-                            arvalid <= 0;
-                            rready <= 0;
-                            Wvalid <= 1;
-                        end
-                    end
-                end else if (MemWrite) begin
-                    awvalid <= 1;
-                    if (awvalid && awready) begin
-                        wvalid <= 1;
-                        if (wvalid && wready) begin
-                            awvalid <= 0;
-                            wvalid <= 0;
-                            bready <= 1;
-                            if (bvalid && bready) begin
-                                bready <= 0;
-                            end
-                            Wvalid <= 1;
-                        end
-                    end
-                end
+        end
+    end
+
+    always @(posedge clk) begin
+        if (Evalid && Wready) begin
+            Wready <= 0;
+            arvalid <= 1;
+            awvalid <= 1;
+            if (~MemRead && ~MemWrite) begin
                 Wvalid <= 1;
+                Wready <= 1;
             end
+        end
+    end
+
+    always @(posedge clk) begin
+        if (MemRead) begin
+            if (arvalid && aready) begin
+                rready <= 1;
+                if (rvalid && rready) begin
+                    arvalid <= 0;
+                    rready <= 0;
+                    Wvalid <= 1;
+                    Wready <= 1;
+                end
+            end
+        end else if (MemWrite) begin
+            if (awvalid && awready) begin
+                wvalid <= 1;
+                if (wvalid && wready) begin
+                    awvalid <= 0;
+                    wvalid <= 0;
+                    bready <= 1;
+                    if (bvalid && bready) begin
+                        bready <= 0;
+                    end
+                    Wvalid <= 1;
+                    Wready <= 1;
+                end
+            end
+        end
+    end
+
+    always @(posedge clk) begin
+        if (Wvalid && Pready) begin
+            Wvalid <= 0;
         end
     end
 

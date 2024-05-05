@@ -14,8 +14,6 @@ BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 
-default: $(BIN)
-
 $(shell mkdir -p $(BUILD_DIR))
 
 # Include all filelist.mk to merge file lists
@@ -52,6 +50,8 @@ NPCFLAGS += --diff=$(DIFF_REF_SO)
 # Include rules for menuconfig
 include $(NPC_HOME)/scripts/config.mk
 
+default: $(BIN)
+
 $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
@@ -69,7 +69,7 @@ gdb: $(BIN)
 	@gdb --args $^ $(NPCFLAGS) $(ARGS) $(IMG) 
 
 waves: $(BIN)
-	gtkwave $(BUILD_DIR)/waveform.vcd $(BUILD_DIR)/config.gtkw
+	gtkwave $(BUILD_DIR)/waveform.vcd ./config.gtkw
 
 clean:
 	rm -rf $(BUILD_DIR)

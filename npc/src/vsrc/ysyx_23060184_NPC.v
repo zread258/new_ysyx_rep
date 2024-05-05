@@ -1,4 +1,5 @@
 module ysyx_23060184_NPC #(NPC_OP_LENGTH = 3, DATA_WIDTH = 32) (
+    input                           clk,
     input                           resetn,
     input [NPC_OP_LENGTH - 1:0]     Npc_op,
     input [DATA_WIDTH - 1:0]        PC,
@@ -17,7 +18,7 @@ module ysyx_23060184_NPC #(NPC_OP_LENGTH = 3, DATA_WIDTH = 32) (
     assign JAL_Offset = {{12{Imm20[19]}}, {Imm20[7:0]}, {Imm20[8]}, {Imm20[18:9]}, 1'b0};
     assign Branch_Offset = {{20{Inst[31]}}, Inst[7], Inst[30:25], Inst[11:8], 1'b0};
 
-    always @ (PC) begin
+    always @ (clk) begin
         case (Npc_op)
             `NPC_OP_NEXT:
                 NPC <= PCPlus4;

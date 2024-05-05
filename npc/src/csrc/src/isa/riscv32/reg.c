@@ -18,8 +18,10 @@ const char *regs[] = {
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
+#define NR_GPR MUXDEF(CONFIG_RVE, 16, 32)
+
 void update_cpu_reg() {
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < NR_GPR; i++) {
     cpu.gpr[i] = dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
   }
   cpu.mstatus = csr(0x300);
@@ -29,7 +31,7 @@ void update_cpu_reg() {
 }
 
 void isa_reg_display() {
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < NR_GPR; i++) {
     word_t val = dut->rootp->ysyx_23060184_SGC__DOT__RegFile__DOT__rf[i];
     printf("%s\t0x%08x\t%010u\n", regs[i], val, val);
   }
@@ -37,7 +39,7 @@ void isa_reg_display() {
 
 word_t isa_reg_str2val(const char *s, bool *success) {
   int i = 0;
-  for (i = 0; i < 32; i++) {
+  for (i = 0; i < NR_GPR; i++) {
     if (strcmp(s, regs[i]) == 0) {
       *success = true;
       break;

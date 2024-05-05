@@ -1,10 +1,11 @@
 module ysyx_23060184_InstMem(
     input                           clk,
+    input                           resetn,
     input       [`DATA_WIDTH - 1:0] A,
     input                           Pvalid,
-    // input                           Eready,
+    input                           Eready,
     output reg                      Ivalid,
-    // output reg                      Iready,
+    output reg                      Iready,
     output reg  [`DATA_WIDTH - 1:0] RD
 );
 
@@ -21,6 +22,7 @@ module ysyx_23060184_InstMem(
 
     ysyx_23060184_SRAM SRAM (
         .clk(clk),
+        .resetn(resetn),
         .araddr(A),
         .arvalid(arvalid),
         .aready(aready),
@@ -41,17 +43,30 @@ module ysyx_23060184_InstMem(
     );
 
     always @(posedge clk) begin
-        if (Pvalid) begin
-            arvalid <= 1;
+        if (~resetn) begin
+            Iready <= 1;
             Ivalid <= 0;
-            if (arvalid && aready) begin
-                rready <= 1;
-                if (rvalid && rready) begin
-                    // RD <= rdata;
-                    arvalid <= 0;
-                    rready <= 0;
-                    Ivalid <= 1;
-                end
+            rready <= 1;
+        end else if (Pvalid && Iready) begin
+            Iready <= 0; // Inst Fetch start
+            arvalid <= 1; // Addr Read request
+        end 
+    end
+
+    always @(posedge clk) begin
+        if (Ivalid && Eready) begin
+            Ivalid <= 0;
+        end
+    end
+
+    always @(posedge clk) begin
+        if (arvalid && aready) begin // Addr Handshake
+            rready <= 1; // Read Ready
+            if (rvalid && rready) begin // Read Handshake
+                arvalid <= 0;
+                rready <= 0;
+                Ivalid <= 1;
+                Iready <= 1;
             end
         end
     end

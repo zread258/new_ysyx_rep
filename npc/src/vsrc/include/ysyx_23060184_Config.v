@@ -10,7 +10,7 @@
 // Data Memory Capacity
 `define DM_LENGTH       1023
 // Default register data (32 digits of 0)
-`define INIT_VAL     32'h00000000
+`define INIT_VAL        32'h00000000
 // FUNC3 LENGTH
 `define FUNCT3_LENGTH    3
 // FUNC7 LENGTH
