@@ -185,3 +185,14 @@
 // `define CSR_MTVEC       12'h305
 // `define CSR_MEPC        12'h341
 // `define CSR_MCAUSE      12'h342
+
+// ARBITER CONTROL SIGNALS
+// NUMBER OF ARBITER MASTERS
+`define NUM_ARB_MASTERS  2
+`define EMPTY_REQ        2'b00
+`define INSTMEM_REQ      2'b01
+`define DATAMEM_REQ      2'b10
+`define BOTH_REQ         2'b11
+`define EMPTY_GRANT      2'b00
+`define INSTMEM_GRANT    2'b01
+`define DATAMEM_GRANT    2'b10

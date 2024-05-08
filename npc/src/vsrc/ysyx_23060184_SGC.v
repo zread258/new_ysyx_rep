@@ -11,6 +11,11 @@ module ysyx_23060184_SGC(
       output reg [`DATA_WIDTH - 1:0] pc,
       output reg [`DATA_WIDTH - 1:0] inst
    );
+
+   /* 
+      CPU-related signals Begin
+   */
+
    reg [`DATA_WIDTH - 1:0]          Npc;
    reg [`DATA_WIDTH - 1:0]          ImmExt;
    reg [`DATA_WIDTH - 1:0]          ALUResult;
@@ -47,33 +52,175 @@ module ysyx_23060184_SGC(
    wire Wvalid;
    wire Wready;
    wire Pready;
+   wire Drequst;
+   wire Irequst;
+
+   /* 
+      CPU-related signals End
+   */
+
+   /*
+      Data Memory related AXI4 signals Begin
+   */
+
+   wire [`DATA_WIDTH - 1:0]         d_araddr;
+   wire                             d_arvalid;
+   wire                             d_rready;
+   wire [`DATA_WIDTH - 1:0]         d_awaddr;
+   wire                             d_awvalid;
+   wire [`DATA_WIDTH - 1:0]         d_wdata;
+   wire [`WMASK_LENGTH - 1:0]       d_wstrb;
+   wire                             d_wvalid;
+   wire                             d_bready;
+
+   /*
+      Data Memory related AXI4 signals End
+   */
 
    ysyx_23060184_DataMem DataMem (
       .clk(clk),
       .resetn(resetn),
       .raddr(ALUResult),
       .Evalid(Evalid),
+      .Dgrant(grant[1]),
       .Wvalid(Wvalid),
       .Wready(Wready),
       .Pready(Pready),
+      .araddr(d_araddr),
+      .arvalid(d_arvalid),
+      .aready(aready),
+      .rdata(rdata),
+      .rresp(rresp),
+      .rvalid(rvalid),
+      .rready(d_rready),
+      .awaddr(d_awaddr),
+      .awvalid(d_awvalid),
+      .awready(awready),
+      .wdata(d_wdata),
+      .wstrb(d_wstrb),
+      .wvalid(d_wvalid),
+      .wready(wready),
+      .bready(d_bready),
+      .bresp(bresp),
+      .bvalid(bvalid),
       .MemRead(MemRead),
       .MemWrite(MemWrite),
       .wmask(Wmask),
-      .wdata(RD2),
+      .data(RD2),
       .ropcode(Ropcode),
+      .Drequst(Drequst),
       .result(ReadData)
    );
+
+   /*
+      Inst Memory related AXI4 signals Begin
+   */
+
+   wire [`DATA_WIDTH - 1:0]         i_araddr;
+   wire                             i_arvalid;
+   wire                             i_rready;
+
+   /*
+      Inst Memory related AXI4 signals End
+   */
 
    ysyx_23060184_InstMem InstMem (
       .clk(clk),
       .resetn(resetn),
       .A(pc),
+      .Igrant(grant[0]),
+      .araddr(i_araddr),
+      .arvalid(i_arvalid),
+      .aready(aready),
+      .rdata(rdata),
+      .rresp(rresp),
+      .rvalid(rvalid),
+      .rready(i_rready),
+      .wready(wready),
+      .bresp(bresp),
+      .bvalid(bvalid),
+      .awready(awready),
       .Pvalid(Pvalid),
       .Eready(Eready),
       .Ivalid(Ivalid),
       .Iready(Iready),
+      .Irequst(Irequst),
       .RD(inst)
    );
+
+   wire [`NUM_ARB_MASTERS - 1:0] grant;
+
+   ysyx_23060184_Arbiter Arbiter (
+      .clk(clk),
+      .req({Drequst, Irequst}),
+      .grant(grant)
+   );
+
+   // SRAM output signals
+   wire                          aready;
+   wire [`DATA_WIDTH - 1:0]      rdata;
+   wire [`ACERR_WIDTH - 1:0]     rresp;
+   wire                          rvalid;
+   wire                          awready;
+   wire                          wready;
+   wire [`ACERR_WIDTH - 1:0]     bresp;
+   wire                          bvalid;
+   
+   ysyx_23060184_SRAM SRAM (
+      .clk(clk),
+
+      /*
+        Arbiter signals Begin
+      */
+      .grant(grant),
+      /*
+        Arbiter signals End
+      */
+
+      /*
+        DataMem AXI4 Handshake signals Begin
+      */
+      .d_araddr(d_araddr),
+      .d_arvalid(d_arvalid),
+      .d_rready(d_rready),
+      .d_awaddr(d_awaddr),
+      .d_awvalid(d_awvalid),
+      .d_wdata(d_wdata),
+      .d_wstrb(d_wstrb),
+      .d_wvalid(d_wvalid),
+      .d_bready(d_bready),
+      /*
+        DataMem AXI4 Handshake signals End
+      */
+
+      /*
+        InstMem AXI4 Handshake signals Begin
+      */
+      .i_araddr(i_araddr),
+      .i_arvalid(i_arvalid),
+      .i_rready(i_rready),
+      /*
+        InstMem AXI4 Handshake signals End
+      */
+
+      /*
+        SRAM AXI4 Handshake signals Begin
+      */
+      .aready(aready),
+      .rdata(rdata),
+      .rresp(rresp),
+      .rvalid(rvalid),
+      .awready(awready),
+      .wready(wready),
+      .bresp(bresp),
+      .bvalid(bvalid)
+      /*
+        SRAM AXI4 Handshake signals End
+      */
+   );
+
+   // SRAM related Multiplexers
+   
 
    ysyx_23060184_ControlUnit ControlUnit (
       .opcode(inst[6:0]),

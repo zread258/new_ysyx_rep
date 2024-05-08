@@ -1,46 +1,51 @@
 module ysyx_23060184_InstMem(
-    input                           clk,
-    input                           resetn,
-    input       [`DATA_WIDTH - 1:0] A,
-    input                           Pvalid,
-    input                           Eready,
-    output reg                      Ivalid,
-    output reg                      Iready,
-    output reg  [`DATA_WIDTH - 1:0] RD
+    input                               clk,
+    input                               resetn,
+
+    // Input signals
+    input       [`DATA_WIDTH - 1:0]     A,
+    input                               Igrant,
+
+
+    /* 
+        AXI4 Handshake signals Begin
+    */ 
+
+    // Read Addr Channel 
+    output [`DATA_WIDTH - 1:0]          araddr,
+    output reg                          arvalid,
+    input                               aready,
+    // Read Channel
+    input [`DATA_WIDTH - 1:0]           rdata,
+    input [`ACERR_WIDTH - 1:0]          rresp,
+    input                               rvalid,
+    output reg                          rready,
+
+    // Redundant signals
+    output reg                          wready,
+    output reg [`ACERR_WIDTH - 1:0]     bresp,
+    output reg                          bvalid,
+    output reg                          awready,
+
+    /* 
+        AXI4 Handshake signals End
+    */ 
+
+
+    // Unit Handshake signals
+    input                               Pvalid,
+    input                               Eready,
+    output reg                          Ivalid,
+    output reg                          Iready,
+
+    // Output signals
+    output reg                          Irequst,
+    output reg  [`DATA_WIDTH - 1:0]     RD
 );
 
-    reg                         arvalid;
-    reg                         aready;
-    reg [`DATA_WIDTH - 1:0]     rdata;
-    reg [`ACERR_WIDTH - 1:0]    rresp;
-    reg                         rvalid;
-    reg                         rready;
-    reg                         awready;
-    reg                         wready;
-    reg [`ACERR_WIDTH - 1:0]    bresp;
-    reg                         bvalid;
+    assign araddr = A;
+    // assign RD =   rdata;
 
-    ysyx_23060184_SRAM SRAM (
-        .clk(clk),
-        .resetn(resetn),
-        .araddr(A),
-        .arvalid(arvalid),
-        .aready(aready),
-        .rdata(RD),
-        .rresp(rresp),
-        .rvalid(rvalid),
-        .rready(rready),
-        .awaddr(0),
-        .awvalid(0),
-        .awready(awready),
-        .wdata(0),
-        .wstrb(0),
-        .wvalid(0),
-        .wready(wready),
-        .bready(0),
-        .bresp(bresp),
-        .bvalid(bvalid)
-    );
 
     always @(posedge clk) begin
         if (~resetn) begin
@@ -49,6 +54,7 @@ module ysyx_23060184_InstMem(
             rready <= 1;
         end else if (Pvalid && Iready) begin
             Iready <= 0; // Inst Fetch start
+            Irequst <= 1; // Inst Fetch request
             arvalid <= 1; // Addr Read request
         end 
     end
@@ -67,7 +73,14 @@ module ysyx_23060184_InstMem(
                 rready <= 0;
                 Ivalid <= 1;
                 Iready <= 1;
+                Irequst <= 0;
             end
+        end
+    end
+
+    always @(rdata) begin
+        if (Igrant) begin
+            RD <= rdata;
         end
     end
 

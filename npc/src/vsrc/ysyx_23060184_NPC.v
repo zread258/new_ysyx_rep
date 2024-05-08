@@ -9,6 +9,7 @@ module ysyx_23060184_NPC #(NPC_OP_LENGTH = 3, DATA_WIDTH = 32) (
     input [DATA_WIDTH - 1:0]        CsrRead,
     output reg [DATA_WIDTH - 1:0]   NPC
 );
+
     reg [DATA_WIDTH - 1:0] PCPlus4;
     reg [DATA_WIDTH - 1:0] JAL_Offset;
     reg [DATA_WIDTH - 1:0] JALR_Offset;
