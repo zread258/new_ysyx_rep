@@ -189,6 +189,10 @@
 // ARBITER CONTROL SIGNALS
 // NUMBER OF ARBITER MASTERS
 `define NUM_ARB_MASTERS  2
+`define SRAM_ADDR_BEGIN  32'h80000000
+`define SRAM_ADDR_END    32'ha0ffffff
+`define UART_ADDR_BEGIN  32'hb0000000
+`define UART_ADDR_END    32'hb0000fff
 `define EMPTY_REQ        2'b00
 `define INSTMEM_REQ      2'b01
 `define DATAMEM_REQ      2'b10
@@ -196,3 +200,4 @@
 `define EMPTY_GRANT      2'b00
 `define INSTMEM_GRANT    2'b01
 `define DATAMEM_GRANT    2'b10
+`define UART_GRANT       2'b11

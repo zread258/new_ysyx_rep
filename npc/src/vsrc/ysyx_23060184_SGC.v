@@ -82,27 +82,51 @@ module ysyx_23060184_SGC(
       .resetn(resetn),
       .raddr(ALUResult),
       .Evalid(Evalid),
-      .Dgrant(grant[1]),
+      .grant(grant),
       .Wvalid(Wvalid),
       .Wready(Wready),
       .Pready(Pready),
       .araddr(d_araddr),
       .arvalid(d_arvalid),
-      .aready(aready),
-      .rdata(rdata),
-      .rresp(rresp),
-      .rvalid(rvalid),
+
+      /*
+         SRAM AXI4 input signals Begin
+      */
+      .s_aready(s_aready),
+      .s_rdata(s_rdata),
+      .s_rresp(s_rresp),
+      .s_rvalid(s_rvalid),
+      .s_awready(s_awready),
+      .s_wready(s_wready),
+      .s_bvalid(s_bvalid),
+      .s_bresp(s_bresp),
+      /*
+         SRAM AXI4 input signals End
+      */
+
+      /*
+         UART AXI4 input signals Begin
+      */
+      .u_aready(u_aready),
+      .u_rdata(u_rdata),
+      .u_rresp(u_rresp),
+      .u_rvalid(u_rvalid),
+      .u_awready(u_awready),
+      .u_wready(u_wready),
+      .u_bvalid(u_bvalid),
+      .u_bresp(u_bresp),
+      /*
+         UART AXI4 input signals End
+      */
+
+
       .rready(d_rready),
       .awaddr(d_awaddr),
       .awvalid(d_awvalid),
-      .awready(awready),
       .wdata(d_wdata),
       .wstrb(d_wstrb),
       .wvalid(d_wvalid),
-      .wready(wready),
       .bready(d_bready),
-      .bresp(bresp),
-      .bvalid(bvalid),
       .MemRead(MemRead),
       .MemWrite(MemWrite),
       .wmask(Wmask),
@@ -128,18 +152,18 @@ module ysyx_23060184_SGC(
       .clk(clk),
       .resetn(resetn),
       .A(pc),
-      .Igrant(grant[0]),
+      .grant(grant),
       .araddr(i_araddr),
       .arvalid(i_arvalid),
-      .aready(aready),
-      .rdata(rdata),
-      .rresp(rresp),
-      .rvalid(rvalid),
+      .aready(s_aready),
+      .rdata(s_rdata),
+      .rresp(s_rresp),
+      .rvalid(s_rvalid),
       .rready(i_rready),
-      .wready(wready),
-      .bresp(bresp),
-      .bvalid(bvalid),
-      .awready(awready),
+      .wready(s_wready),
+      .bresp(s_bresp),
+      .bvalid(s_bvalid),
+      .awready(s_awready),
       .Pvalid(Pvalid),
       .Eready(Eready),
       .Ivalid(Ivalid),
@@ -153,18 +177,20 @@ module ysyx_23060184_SGC(
    ysyx_23060184_Arbiter Arbiter (
       .clk(clk),
       .req({Drequst, Irequst}),
+      .iaddr(i_araddr),
+      .daddr(ALUResult),
       .grant(grant)
    );
 
    // SRAM output signals
-   wire                          aready;
-   wire [`DATA_WIDTH - 1:0]      rdata;
-   wire [`ACERR_WIDTH - 1:0]     rresp;
-   wire                          rvalid;
-   wire                          awready;
-   wire                          wready;
-   wire [`ACERR_WIDTH - 1:0]     bresp;
-   wire                          bvalid;
+   wire                          s_aready;
+   wire [`DATA_WIDTH - 1:0]      s_rdata;
+   wire [`ACERR_WIDTH - 1:0]     s_rresp;
+   wire                          s_rvalid;
+   wire                          s_awready;
+   wire                          s_wready;
+   wire [`ACERR_WIDTH - 1:0]     s_bresp;
+   wire                          s_bvalid;
    
    ysyx_23060184_SRAM SRAM (
       .clk(clk),
@@ -206,21 +232,71 @@ module ysyx_23060184_SGC(
       /*
         SRAM AXI4 Handshake signals Begin
       */
-      .aready(aready),
-      .rdata(rdata),
-      .rresp(rresp),
-      .rvalid(rvalid),
-      .awready(awready),
-      .wready(wready),
-      .bresp(bresp),
-      .bvalid(bvalid)
+      .aready(s_aready),
+      .rdata(s_rdata),
+      .rresp(s_rresp),
+      .rvalid(s_rvalid),
+      .awready(s_awready),
+      .wready(s_wready),
+      .bresp(s_bresp),
+      .bvalid(s_bvalid)
       /*
         SRAM AXI4 Handshake signals End
       */
    );
-
-   // SRAM related Multiplexers
    
+   // UART output signals
+   wire                          u_aready;
+   wire [`DATA_WIDTH - 1:0]      u_rdata;
+   wire [`ACERR_WIDTH - 1:0]     u_rresp;
+   wire                          u_rvalid;
+   wire                          u_awready;
+   wire                          u_wready;
+   wire [`ACERR_WIDTH - 1:0]     u_bresp;
+   wire                          u_bvalid;
+   
+   ysyx_23060184_UART UART (
+      .clk(clk),
+
+      /*
+        Arbiter signals Begin
+      */
+      .grant(grant),
+      /*
+        Arbiter signals End
+      */
+
+      /*
+        DataMem AXI4 Handshake signals Begin
+      */
+      .araddr(d_araddr),
+      .arvalid(d_arvalid),
+      .rready(d_rready),
+      .awaddr(d_awaddr),
+      .awvalid(d_awvalid),
+      .wdata(d_wdata),
+      .wstrb(d_wstrb),
+      .wvalid(d_wvalid),
+      .bready(d_bready),
+      /*
+        DataMem AXI4 Handshake signals End
+      */
+
+      /*
+        UART AXI4 Handshake signals Begin
+      */
+      .aready(u_aready),
+      .rdata(u_rdata),
+      .rresp(u_rresp),
+      .rvalid(u_rvalid),
+      .awready(u_awready),
+      .wready(u_wready),
+      .bresp(u_bresp),
+      .bvalid(u_bvalid)
+      /*
+        UART AXI4 Handshake signals End
+      */
+   );
 
    ysyx_23060184_ControlUnit ControlUnit (
       .opcode(inst[6:0]),

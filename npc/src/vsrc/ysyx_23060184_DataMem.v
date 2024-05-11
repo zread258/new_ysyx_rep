@@ -6,40 +6,78 @@ module ysyx_23060184_DataMem (
     // Unit Handshake signals
     input                               Pready,
     input                               Evalid,
-    input                               Dgrant,
+    input [`NUM_ARB_MASTERS - 1:0]      grant,
     output reg                          Wready,
     output reg                          Wvalid,
 
 
     /* 
-        AXI4 Handshake signals Begin
+        SRAM AXI4 Handshake signals Begin
+    */ 
+
+    // Read Addr Channel 
+    input                               s_aready,
+    // Read Channel
+    input [`DATA_WIDTH - 1:0]           s_rdata,
+    input [`ACERR_WIDTH - 1:0]          s_rresp,
+    input                               s_rvalid,
+    // Write Addr Channel
+    input                               s_awready,
+    // Write Channel
+    input                               s_wready,
+    // Write Response Channel
+    input                               s_bvalid,
+    input [`ACERR_WIDTH - 1:0]          s_bresp,
+
+    /* 
+        SRAM AXI4 Handshake signals End
+    */ 
+
+
+    /* 
+        UART AXI4 Handshake signals Begin
+    */ 
+
+    // Read Addr Channel 
+    input                               u_aready,
+    // Read Channel
+    input [`DATA_WIDTH - 1:0]           u_rdata,
+    input [`ACERR_WIDTH - 1:0]          u_rresp,
+    input                               u_rvalid,
+    // Write Addr Channel
+    input                               u_awready,
+    // Write Channel
+    input                               u_wready,
+    // Write Response Channel
+    input                               u_bvalid,
+    input [`ACERR_WIDTH - 1:0]          u_bresp,
+
+    /* 
+        UART AXI4 Handshake signals End
+    */ 
+
+
+    /* 
+        DataMem AXI4 Handshake signals Begin
     */ 
 
     // Read Addr Channel 
     output [`DATA_WIDTH - 1:0]          araddr,
     output reg                          arvalid,
-    input                               aready,
     // Read Channel
-    input [`DATA_WIDTH - 1:0]           rdata,
-    input [`ACERR_WIDTH - 1:0]          rresp,
-    input                               rvalid,
     output reg                          rready,
     // Write Addr Channel
     output reg [`DATA_WIDTH - 1:0]      wdata,
     output [`DATA_WIDTH - 1:0]          awaddr,
     output                              awvalid,
-    input                               awready,
     // Write Channel
     output [`WMASK_LENGTH - 1:0]        wstrb,
     output reg                          wvalid,
-    input                               wready,
     // Write Response Channel
     output reg                          bready,
-    output reg [`ACERR_WIDTH - 1:0]     bresp,
-    output reg                          bvalid,
 
     /* 
-        AXI4 Handshake signals End
+        DataMem AXI4 Handshake signals End
     */ 
 
 
@@ -60,6 +98,14 @@ module ysyx_23060184_DataMem (
     assign awaddr = raddr;
     assign wstrb = wmask;
     assign wdata = data;
+
+    wire SRAM, UART;
+    assign SRAM = (raddr >= `SRAM_ADDR_BEGIN && raddr <= `SRAM_ADDR_END) ? 1 : 0;
+    assign UART = (raddr >= `UART_ADDR_BEGIN && raddr <= `UART_ADDR_END) ? 1 : 0;
+    wire Dgrant = (grant == `DATAMEM_GRANT) ? 1 : 0;
+
+    wire [`DATA_WIDTH - 1:0] rdata;
+    assign rdata = (SRAM) ? s_rdata : u_rdata;
 
 
     always @(posedge clk) begin
@@ -82,11 +128,14 @@ module ysyx_23060184_DataMem (
         end
     end
 
+    /*
+        SRAM AXI4 Transaction Begin
+    */
     always @(posedge clk) begin
-        if (MemRead && Dgrant) begin
-            if (arvalid && aready) begin
+        if (MemRead && SRAM && Dgrant) begin
+            if (arvalid && s_aready) begin
                 rready <= 1;
-                if (rvalid && rready) begin
+                if (s_rvalid && rready) begin
                     arvalid <= 0;
                     rready <= 0;
                     Wvalid <= 1;
@@ -94,14 +143,14 @@ module ysyx_23060184_DataMem (
                     Drequst <= 0;
                 end
             end
-        end else if (MemWrite && Dgrant) begin
-            if (awvalid && awready) begin
+        end else if (MemWrite && SRAM && Dgrant) begin
+            if (awvalid && s_awready) begin
                 wvalid <= 1;
-                if (wvalid && wready) begin
+                if (wvalid && s_wready) begin
                     awvalid <= 0;
                     wvalid <= 0;
                     bready <= 1;
-                    if (bvalid && bready) begin
+                    if (s_bvalid && bready) begin
                         bready <= 0;
                     end
                     Wvalid <= 1;
@@ -111,6 +160,45 @@ module ysyx_23060184_DataMem (
             end
         end
     end
+    /*
+        SRAM AXI4 Transaction End
+    */
+
+    /*
+        UART AXI4 Transaction Begin
+    */
+    always @(posedge clk) begin
+        if (MemRead && UART && Dgrant) begin
+            if (arvalid && u_aready) begin
+                rready <= 1;
+                if (u_rvalid && rready) begin
+                    arvalid <= 0;
+                    rready <= 0;
+                    Wvalid <= 1;
+                    Wready <= 1;
+                    Drequst <= 0;
+                end
+            end
+        end else if (MemWrite && UART && Dgrant) begin
+            if (awvalid && u_awready) begin
+                wvalid <= 1;
+                if (wvalid && u_wready) begin
+                    awvalid <= 0;
+                    wvalid <= 0;
+                    bready <= 1;
+                    if (u_bvalid && bready) begin
+                        bready <= 0;
+                    end
+                    Wvalid <= 1;
+                    Wready <= 1;
+                    Drequst <= 0;
+                end
+            end
+        end
+    end
+    /*
+        UART AXI4 Transaction End
+    */
 
     always @(posedge clk) begin
         if (Wvalid && Pready) begin

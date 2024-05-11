@@ -64,8 +64,9 @@ module ysyx_23060184_SRAM (
 
 );
 
-    wire                                        valid;  // Whether slave is needed (seems redundant)
-    assign valid = (grant == `EMPTY_GRANT) ? 0 : 1;
+    wire                                        valid;
+    assign valid = (grant == `EMPTY_GRANT) ? 0 : 
+                        (grant == `UART_GRANT) ? 0 : 1;
     wire                                        InstMem;
     assign InstMem = (grant == `INSTMEM_GRANT) ? 1 : 0;
     wire                                        DataMem;

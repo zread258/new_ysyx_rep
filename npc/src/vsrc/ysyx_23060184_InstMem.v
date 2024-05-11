@@ -4,7 +4,7 @@ module ysyx_23060184_InstMem(
 
     // Input signals
     input       [`DATA_WIDTH - 1:0]     A,
-    input                               Igrant,
+    input [`NUM_ARB_MASTERS - 1:0]      grant,
 
 
     /* 
@@ -44,8 +44,7 @@ module ysyx_23060184_InstMem(
 );
 
     assign araddr = A;
-    // assign RD =   rdata;
-
+    wire Igrant = (grant == `INSTMEM_GRANT) ? 1 : 0;
 
     always @(posedge clk) begin
         if (~resetn) begin
@@ -78,7 +77,7 @@ module ysyx_23060184_InstMem(
         end
     end
 
-    always @(rdata) begin
+    always @(rdata) begin // To be improved!
         if (Igrant) begin
             RD <= rdata;
         end
