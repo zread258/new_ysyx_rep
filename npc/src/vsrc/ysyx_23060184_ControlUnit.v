@@ -5,7 +5,7 @@ module ysyx_23060184_ControlUnit (
     input [`FUNCT12_LENGTH - 1:0]       funct12,
     input                               Flag,
     input                               Zero,
-    output [`NPC_OP_LENGTH - 1:0]       Npc_op,
+    output [`PC_SRC_LENGTH - 1:0]       PCSrc,
     output                              RegWrite,
     output                              MemRead,
     output                              MemWrite,
@@ -202,6 +202,7 @@ module ysyx_23060184_ControlUnit (
             (itype) ? `EXT_OP_I : 
             (store)  ? `EXT_OP_S : 
             (branch) ? `EXT_OP_B :
+            (jal) ? `EXT_OP_J :
             `EXT_OP_I;
 
     assign branch_flag = (beq && Zero) ? 1 :
@@ -209,12 +210,18 @@ module ysyx_23060184_ControlUnit (
             ((blt || bltu) && Flag) ? 1 : 
             ((bge || bgeu) && ~Flag) ? 1 : 0;
 
-    assign Npc_op = (lui || auipc || addi) ? `NPC_OP_NEXT :
-            (jal) ? `NPC_OP_JAL :
-            (jalr) ? `NPC_OP_JALR : 
-            (branch & branch_flag) ? `NPC_OP_BRANCH :
-            (ecall || mret) ? `NPC_OP_CSR :
-            `NPC_OP_NEXT;
+//     assign Npc_op = (lui || auipc || addi) ? `NPC_OP_NEXT :
+//             (jal) ? `NPC_OP_JAL :
+//             (jalr) ? `NPC_OP_JALR : 
+//             (branch & branch_flag) ? `NPC_OP_BRANCH :
+//             (ecall || mret) ? `NPC_OP_CSR :
+//             `NPC_OP_NEXT;
+
+    assign PCSrc = (jal) ? `PC_SRC_PCTarget :
+            (jalr) ? `PC_SRC_ALU :
+            (branch & branch_flag) ? `PC_SRC_PCTarget :
+            (ecall || mret) ? `PC_SRC_CSRREAD :
+            `PC_SRC_PCPlus4;
 
     assign CsrSrc = (ecall) ? `CSR_SRC_PC :
             (csrrw || csrrs) ? `CSR_SRC_ALU : 0;

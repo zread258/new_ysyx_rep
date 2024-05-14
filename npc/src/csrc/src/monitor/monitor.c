@@ -134,6 +134,12 @@ void init_monitor(int argc, char *argv[]) {
   parse_elf(ftrace_file);
   #endif
 
+  #ifdef CONFIG_WAVEVCD
+  Log("Wavevcd : " ANSI_FMT("ON", ANSI_FG_GREEN));
+  #else
+  Log("Wavevcd : " ANSI_FMT("OFF", ANSI_FG_RED));
+  #endif
+
 // #ifndef CONFIG_ISA_loongarch32r
   IFDEF(CONFIG_ITRACE, init_disasm(
     MUXDEF(CONFIG_ISA_x86,     "i686",
@@ -143,27 +149,10 @@ void init_monitor(int argc, char *argv[]) {
                                "riscv32"),
                                "bad"))) "-pc-linux-gnu"
   ));
-//   IFDEF(CONFIG_RING_ITRACE, init_disasm(
-//     MUXDEF(CONFIG_ISA_x86,     "i686",
-//     MUXDEF(CONFIG_ISA_mips32,  "mipsel",
-//     MUXDEF(CONFIG_ISA_riscv,
-//       MUXDEF(CONFIG_RV64,      "riscv64",
-//                                "riscv32"),
-//                                "bad"))) "-pc-linux-gnu"
-//   ));
-// #endif
 
   welcome();
 
 }
-// #else // CONFIG_TARGET_AM
-// static long load_img() {
-//   extern char bin_start, bin_end;
-//   size_t size = &bin_end - &bin_start;
-//   Log("img size = %ld", size);
-//   memcpy(guest_to_host(RESET_VECTOR), &bin_start, size);
-//   return size;
-// }
 
 void am_init_monitor() {
   // init_rand();

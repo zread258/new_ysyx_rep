@@ -154,7 +154,7 @@
 `define EXT_OP_U        3'b001      // LUI: Shift Left 16
 `define EXT_OP_S        3'b010      // STORE
 `define EXT_OP_B        3'b011      // ADDIU: `imm16` signed extended to 32 bit
-// `define EXT_OP_J        2'b100      // LW, SW: `imm16` unsigned extended to 32 bit
+`define EXT_OP_J        3'b100      // LW, SW: `imm16` unsigned extended to 32 bit
 
 // NPCOp Control Signals
 `define NPC_OP_LENGTH   3          // Bits of NPCOp
@@ -164,6 +164,14 @@
 `define NPC_OP_BRANCH   3'b011     // Next instruction: BEQ
 `define NPC_OP_JALR     3'b100     // Next instruction: JALR
 `define NPC_OP_CSR      3'b101
+
+// PCSrc Control Signals
+`define PC_SRC_LENGTH   2          // Bits of PCSrc
+// `define PC_SRC_DEFAULT  3'b000     // PCSrc default value
+`define PC_SRC_PCPlus4  2'b01     // Next instruction: normal
+`define PC_SRC_PCTarget 2'b10     // Next instruction: JAL
+`define PC_SRC_ALU      2'b11     // Next instruction: JALR
+`define PC_SRC_CSRREAD  2'b00     // Next instruction: BEQ
 
 // DataMem WriteMask Signals
 `define WMASK_LENGTH    8

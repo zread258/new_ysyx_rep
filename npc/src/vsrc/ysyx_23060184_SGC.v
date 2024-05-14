@@ -17,11 +17,13 @@ module ysyx_23060184_SGC(
    */
 
    reg [`DATA_WIDTH - 1:0]          Npc;
+   reg [`DATA_WIDTH - 1:0]          PCPlus4;
+   reg [`DATA_WIDTH - 1:0]          PCTarget;
    reg [`DATA_WIDTH - 1:0]          ImmExt;
    reg [`DATA_WIDTH - 1:0]          ALUResult;
    reg [`DATA_WIDTH - 1:0]          RD1;
    reg [`DATA_WIDTH - 1:0]          RD2;
-   reg [`NPC_OP_LENGTH - 1:0]       Npc_op;
+   reg [`PC_SRC_LENGTH - 1:0]       PCSrc;
    reg [`ALU_OP_LENGTH - 1:0]       ALUOp;
    reg [`EXT_OP_LENGTH - 1:0]       ExtOp;
    reg [`RESULT_SRC_LENGTH - 1:0]   ResultSrc;
@@ -303,7 +305,7 @@ module ysyx_23060184_SGC(
       .funct3(inst[14:12]),
       .funct7(inst[31:25]),
       .funct12(inst[31:20]),
-      .Npc_op(Npc_op),
+      .PCSrc(PCSrc),
       .Zero(Zero),
       .Flag(ALUResult[0]),
       .RegWrite(RegWrite),
@@ -331,17 +333,21 @@ module ysyx_23060184_SGC(
       .NPC(Npc),
       .PC(pc)
    );
-   ysyx_23060184_NPC NPC (
-      .clk(clk),
-      .resetn(resetn),
-      .Npc_op(Npc_op),
+   ysyx_23060184_PCPlus4 PCPLus4 (
       .PC(pc),
-      .Inst(inst),
-      .ALUResult(ALUResult),
-      .Imm20(inst[31:12]),
-      .CsrRead(CsrRead),
-      .NPC(Npc)
+      .PCPlus4(PCPlus4)
    );
+   // ysyx_23060184_NPC NPC (
+   //    .clk(clk),
+   //    .resetn(resetn),
+   //    .Npc_op(Npc_op),
+   //    .PC(pc),
+   //    .Inst(inst),
+   //    .ALUResult(ALUResult),
+   //    .Imm20(inst[31:12]),
+   //    .CsrRead(CsrRead),
+   //    .NPC(Npc)
+   // );
    ysyx_23060184_Extend Extend (
       .Inst(inst),
       .ExtOp(ExtOp),
@@ -354,8 +360,22 @@ module ysyx_23060184_SGC(
       .Zero(Zero),
       .ALUResult(ALUResult)
    );
+   ysyx_23060184_PCTarget PCTArget (
+      .PC(pc),
+      .ImmExt(ImmExt),
+      .PCTarget(PCTarget)
+   );
 
    // Multiplexers
+   ysyx_23060184_Mux_PC_Src Mux_PC_Src (
+      .PCSrc(PCSrc),
+      .PCPlus4(PCPlus4),
+      .PCTarget(PCTarget), 
+      .ALUResult(ALUResult),
+      .CsrRead(CsrRead),
+      .NPC(Npc)
+   );
+
    ysyx_23060184_Mux_Result_Src Mux_Result_Src (
       .ResultSrc(ResultSrc),
       .PC(pc),
