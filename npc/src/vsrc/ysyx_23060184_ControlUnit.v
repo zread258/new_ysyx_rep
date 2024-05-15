@@ -1,17 +1,37 @@
 module ysyx_23060184_ControlUnit (
+        
+    /*
+        Input Signals Begin
+    */
     input [`OPCODE_LENGTH - 1:0]        opcode,
     input [`FUNCT3_LENGTH - 1:0]        funct3,
     input [`FUNCT7_LENGTH - 1:0]        funct7,
     input [`FUNCT12_LENGTH - 1:0]       funct12,
-    input                               Flag,
-    input                               Zero,
-    output [`PC_SRC_LENGTH - 1:0]       PCSrc,
+    /* 
+        Input Signals End
+    */
+
+    /*
+        PCSrc Output Signals Begin
+    */
+
+    output reg                          Jal,
+    output reg                          Jalr,
+    output reg                          Beq,
+    output reg                          Bne,
+    output reg                          Bltsu,
+    output reg                          Bgesu,
+    output reg                          Ecall,
+    output reg                          Mret,
+
+    /*
+        PCSrc Output Signals End
+    */
+
     output                              RegWrite,
     output                              MemRead,
     output                              MemWrite,
     output                              CsrWrite,
-    output                              ecall,
-    output                              mret,
     output [`WMASK_LENGTH - 1:0]        Wmask,
     output [`ROPCODE_LENGTH - 1:0]      Ropcode,
     output [`RESULT_SRC_LENGTH - 1:0]   ResultSrc,
@@ -21,19 +41,22 @@ module ysyx_23060184_ControlUnit (
     output [`ALU_OP_LENGTH - 1:0]       ALUOp,
     output [`CSR_SRC_LENGTH - 1:0]      CsrSrc
 );
-    wire auipc, jalr, jal, lui;
+    wire auipc, lui;
 
     wire itype, addi, slli, sltiu, slti, xori, ori, andi, srli, srai;
 
     wire rtype, add, sub, slt, sltu, sll, srl, sra, ror, aand, rxor;
 
-    wire branch, beq, bne, blt, bge, bltu, bgeu, branch_flag;
+    wire branch, blt, bge, bltu, bgeu;
 
     wire load, lw, lh, lb, lhu, lbu;
 
     wire store, sw, sh, sb;
 
     wire csrrw, csrrs;
+
+    assign Bltsu = blt | bltu;
+    assign Bgesu = bge | bgeu;
 
     // I-Type instructions
     assign itype = (opcode == `INST_I_TYPE) ? 1 : 0;
@@ -60,10 +83,10 @@ module ysyx_23060184_ControlUnit (
                 (funct3 == `FUNC3_XORI) ? 1 : 0 : 0;
 
     // CSR related instructions
-    assign ecall = (opcode == `INST_CSR) ?
+    assign Ecall = (opcode == `INST_CSR) ?
                 (funct3 == `FUNC3_ECALL) ? 
                 (funct12 == `FUNC12_ECALL) ? 1 : 0 : 0 : 0;
-    assign mret = (opcode == `INST_CSR) ?
+    assign Mret = (opcode == `INST_CSR) ?
                 (funct3 == `FUNC3_MRET) ? 
                 (funct12 == `FUNC12_MRET) ? 1 : 0 : 0 : 0;
     assign csrrw = (opcode == `INST_CSR) ? 
@@ -72,8 +95,8 @@ module ysyx_23060184_ControlUnit (
                 (funct3 == `FUNC3_CSRRS) ? 1 : 0 : 0;
 
 
-    assign jal = (opcode == `INST_JAL) ? 1 : 0;
-    assign jalr = (opcode == `INST_JALR) ? 1 : 0;
+    assign Jal = (opcode == `INST_JAL) ? 1 : 0;
+    assign Jalr = (opcode == `INST_JALR) ? 1 : 0;
     assign auipc = (opcode == `INST_AUIPC) ? 1 : 0;
     assign lui = (opcode == `INST_LUI) ? 1 : 0;
 
@@ -112,9 +135,9 @@ module ysyx_23060184_ControlUnit (
 
     // Branch instructions
     assign branch = (opcode == `INST_BRANCH) ? 1 : 0;
-    assign beq = (opcode == `INST_BRANCH) ?
+    assign Beq = (opcode == `INST_BRANCH) ?
              (funct3 == `INST_BEQ) ? 1 : 0 : 0;
-    assign bne = (opcode == `INST_BRANCH) ?
+    assign Bne = (opcode == `INST_BRANCH) ?
              (funct3 == `INST_BNE) ? 1 : 0 : 0;
     assign blt = (opcode == `INST_BRANCH) ?
              (funct3 == `INST_BLT) ? 1 : 0 : 0;
@@ -149,7 +172,7 @@ module ysyx_23060184_ControlUnit (
 
 
 
-    assign RegWrite = (lui || itype || auipc || jalr || jal || load || rtype || csrrw || csrrs || ecall) ? 1 : 0;
+    assign RegWrite = (lui || itype || auipc || Jalr || Jal || load || rtype || csrrw || csrrs || Ecall) ? 1 : 0;
 
     assign MemRead = (load) ? 1 : 0;
 
@@ -166,20 +189,20 @@ module ysyx_23060184_ControlUnit (
                      (lbu) ? `READ_BYTEU : 0;
 
     assign ALUSrcA = (auipc) ? `ALU_SRCA_PC :
-            (itype || jalr || store || load || branch || rtype) ? `ALU_SRCA_RD1 : 
+            (itype || Jalr || store || load || branch || rtype) ? `ALU_SRCA_RD1 : 
             (lui) ? `ALU_SRCA_ZERO : 
             (csrrs || csrrw) ? `ALU_SRCA_RD1 :
             `ALU_SRCA_ZERO;
 
-    assign ALUSrcB = (lui || itype || jal || auipc || store || load) ? `ALU_SRCB_IMM : 
+    assign ALUSrcB = (lui || itype || Jal || auipc || store || load) ? `ALU_SRCB_IMM : 
             (csrrs) ? `ALU_SRCB_CSR : 
             (csrrw) ? `ALU_SRCB_ZERO :
             `ALU_SRCB_RD2;
 
-    assign ALUOp = (addi || jalr || load || lui || auipc || add) ? `ALU_OP_ADD :
+    assign ALUOp = (addi || Jalr || load || lui || auipc || add) ? `ALU_OP_ADD :
             (store) ? `ALU_OP_ADD :
-            (jal) ? `ALU_OP_ADD :
-            (sub || beq || bne) ? `ALU_OP_SUB : 
+            (Jal) ? `ALU_OP_ADD :
+            (sub || Beq || Bne) ? `ALU_OP_SUB : 
             (ror || ori) ? `ALU_OP_OR : 
             (aand || andi) ? `ALU_OP_AND :
             (slt || slti || blt || bge) ? `ALU_OP_SLT :
@@ -194,7 +217,7 @@ module ysyx_23060184_ControlUnit (
 
     assign ResultSrc = (itype || auipc || lui || rtype) ? `RESULT_SRC_ALU :
             (load) ? `RESULT_SRC_MEM :
-            (jal || jalr) ? `RESULT_SRC_PCPlus4 :
+            (Jal || Jalr) ? `RESULT_SRC_PCPlus4 :
             (csrrw || csrrs) ? `RESULT_SRC_CSR :
             `RESULT_SRC_DEFAULT;
 
@@ -202,28 +225,10 @@ module ysyx_23060184_ControlUnit (
             (itype) ? `EXT_OP_I : 
             (store)  ? `EXT_OP_S : 
             (branch) ? `EXT_OP_B :
-            (jal) ? `EXT_OP_J :
+            (Jal) ? `EXT_OP_J :
             `EXT_OP_I;
 
-    assign branch_flag = (beq && Zero) ? 1 :
-            (bne && ~Zero) ? 1 :
-            ((blt || bltu) && Flag) ? 1 : 
-            ((bge || bgeu) && ~Flag) ? 1 : 0;
-
-//     assign Npc_op = (lui || auipc || addi) ? `NPC_OP_NEXT :
-//             (jal) ? `NPC_OP_JAL :
-//             (jalr) ? `NPC_OP_JALR : 
-//             (branch & branch_flag) ? `NPC_OP_BRANCH :
-//             (ecall || mret) ? `NPC_OP_CSR :
-//             `NPC_OP_NEXT;
-
-    assign PCSrc = (jal) ? `PC_SRC_PCTarget :
-            (jalr) ? `PC_SRC_ALU :
-            (branch & branch_flag) ? `PC_SRC_PCTarget :
-            (ecall || mret) ? `PC_SRC_CSRREAD :
-            `PC_SRC_PCPlus4;
-
-    assign CsrSrc = (ecall) ? `CSR_SRC_PC :
+    assign CsrSrc = (Ecall) ? `CSR_SRC_PC :
             (csrrw || csrrs) ? `CSR_SRC_ALU : 0;
 
     assign CsrWrite = (csrrw || csrrs) ? 1 : 0;

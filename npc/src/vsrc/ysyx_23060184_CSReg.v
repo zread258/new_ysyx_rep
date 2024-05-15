@@ -13,18 +13,22 @@ module ysyx_23060184_CSReg #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
   input [`CSR_ADDR_LENGTH - 1:0]  waddr,
   input                           wen,
   input [`CSR_ADDR_LENGTH - 1:0]  raddr,
+  input                           Pready,
+  input                           Wvalid,
   output reg [DATA_WIDTH - 1:0]   rdata
 );
 
   reg [DATA_WIDTH-1:0] csr [2**`CSR_ADDR_LENGTH - 1:0];
 
   always @(posedge clk) begin
-    if (wen) begin
-        csr[waddr] <= wdata;
-    end
-    if (ecall) begin
-        csr[`CSR_MCAUSE] <= wdata;
-        csr[`CSR_MEPC] <= pc;
+    if (Wvalid && Pready) begin
+      if (wen) begin
+          csr[waddr] <= wdata;
+      end
+      if (ecall) begin
+          csr[`CSR_MCAUSE] <= wdata;
+          csr[`CSR_MEPC] <= pc;
+      end
     end
   end
   assign rdata = (ecall) ? csr[`CSR_MTVEC] : 

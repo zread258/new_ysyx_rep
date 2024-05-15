@@ -3,7 +3,7 @@ module ysyx_23060184_InstMem(
     input                               resetn,
 
     // Input signals
-    input       [`DATA_WIDTH - 1:0]     A,
+    input [`DATA_WIDTH - 1:0]           A,
     input [`NUM_ARB_MASTERS - 1:0]      grant,
 
 

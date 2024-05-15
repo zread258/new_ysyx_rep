@@ -8,10 +8,6 @@ module ysyx_23060184_PC #(DATA_WIDTH = 32) (
     input [DATA_WIDTH - 1:0]        NPC,
     output reg [DATA_WIDTH - 1:0]   PC
 );
-    // initial begin
-    //     PC = 32'h80000000;
-    //     // Ivalid = 1;
-    // end
 
     always @(posedge clk) begin
         if (!rstn) begin

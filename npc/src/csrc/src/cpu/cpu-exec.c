@@ -27,6 +27,8 @@ static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 word_t old_inst = 0;
 bool start = false;
+word_t same_inst_clock = 0;
+#define MAX_CLOCKS_PER_INST 200
 
 bool check_wp();
 
@@ -47,6 +49,12 @@ static void exec_once() {
   while (old_inst == get_inst()) {
     step_and_dump_wave();
     cpu.pc = get_curpc();
+    same_inst_clock ++;
+    if (same_inst_clock >= MAX_CLOCKS_PER_INST) {
+      sim_break();
+      npc_state.state = NPC_END;
+    }
+    // Assert(!abort, "The instruction is running for too long, maybe it is a bug.");
   } // multi-cycle instruction support
   if (cpu.pc != 0)  start = true; // start to update cpu reg
   old_inst = get_inst();

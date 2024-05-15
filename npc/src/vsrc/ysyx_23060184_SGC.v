@@ -16,28 +16,26 @@ module ysyx_23060184_SGC(
       CPU-related signals Begin
    */
 
-   reg [`DATA_WIDTH - 1:0]          Npc;
-   reg [`DATA_WIDTH - 1:0]          PCPlus4;
-   reg [`DATA_WIDTH - 1:0]          PCTarget;
-   reg [`DATA_WIDTH - 1:0]          ImmExt;
-   reg [`DATA_WIDTH - 1:0]          ALUResult;
-   reg [`DATA_WIDTH - 1:0]          RD1;
-   reg [`DATA_WIDTH - 1:0]          RD2;
-   reg [`PC_SRC_LENGTH - 1:0]       PCSrc;
-   reg [`ALU_OP_LENGTH - 1:0]       ALUOp;
-   reg [`EXT_OP_LENGTH - 1:0]       ExtOp;
-   reg [`RESULT_SRC_LENGTH - 1:0]   ResultSrc;
-   reg [`WMASK_LENGTH - 1:0]        Wmask;
-   reg [`DATA_WIDTH - 1:0]          Result;
-   reg [`DATA_WIDTH - 1:0]          SrcA;
-   reg [`DATA_WIDTH - 1:0]          SrcB;
-   reg [`ALU_SRCA_LENGTH - 1:0]     ALUSrcA;
-   reg [`ALU_SRCB_LENGTH - 1:0]     ALUSrcB;
-   reg [`DATA_WIDTH - 1:0]          ReadData;
-   reg [`ROPCODE_LENGTH - 1:0]      Ropcode;
-   reg [`CSR_SRC_LENGTH - 1:0]      CsrSrc;
-   reg [`DATA_WIDTH - 1:0]          CsrRead;
-   reg [`DATA_WIDTH - 1:0]          CsrWdata;
+   wire [`DATA_WIDTH - 1:0]          ImmExt;
+   wire [`DATA_WIDTH - 1:0]          ALUResult;
+   wire [`DATA_WIDTH - 1:0]          PCTarget;
+   wire [`DATA_WIDTH - 1:0]          RD1;
+   wire [`DATA_WIDTH - 1:0]          RD2;
+   wire [`PC_SRC_LENGTH - 1:0]       PCSrc;
+   wire [`ALU_OP_LENGTH - 1:0]       ALUOp;
+   wire [`EXT_OP_LENGTH - 1:0]       ExtOp;
+   wire [`RESULT_SRC_LENGTH - 1:0]   ResultSrc;
+   wire [`WMASK_LENGTH - 1:0]        Wmask;
+   wire [`DATA_WIDTH - 1:0]          Result;
+   wire [`DATA_WIDTH - 1:0]          SrcA;
+   wire [`DATA_WIDTH - 1:0]          SrcB;
+   wire [`ALU_SRCA_LENGTH - 1:0]     ALUSrcA;
+   wire [`ALU_SRCB_LENGTH - 1:0]     ALUSrcB;
+   wire [`DATA_WIDTH - 1:0]          ReadData;
+   wire [`ROPCODE_LENGTH - 1:0]      Ropcode;
+   wire [`CSR_SRC_LENGTH - 1:0]      CsrSrc;
+   wire [`DATA_WIDTH - 1:0]          CsrRead;
+   wire [`DATA_WIDTH - 1:0]          CsrWdata;
 
    wire RegWrite;
    wire CsrWrite;
@@ -62,6 +60,107 @@ module ysyx_23060184_SGC(
    */
 
    /*
+      Inst Memory related AXI4 signals Begin
+   */
+
+   wire [`DATA_WIDTH - 1:0]         i_araddr;
+   wire                             i_arvalid;
+   wire                             i_rready;
+
+   ysyx_23060184_IFU IFU (
+      .clk(clk),
+      .rstn(resetn),
+      .PCSrc(PCSrc),
+      .PCTarget(PCTarget),
+      .ALUResult(ALUResult),
+      .CsrRead(CsrRead),
+      .Wvalid(Wvalid),
+      .Eready(Eready),
+      .grant(grant),
+      .aready(s_aready),
+      .rdata(s_rdata),
+      .rresp(s_rresp),
+      .rvalid(s_rvalid),
+      .Pready(Pready),
+      .pc(pc),
+      .araddr(i_araddr),
+      .arvalid(i_arvalid),
+      .rready(i_rready),
+      .wready(s_wready),
+      .bresp(s_bresp),
+      .bvalid(s_bvalid),
+      .awready(s_awready),
+      .inst(inst),
+      .Ivalid(Ivalid),
+      .Irequst(Irequst)
+   );
+
+   wire Jal, Jalr, Beq, Bne, Bltsu, Bgesu, Ecall, Mret;
+
+   ysyx_23060184_IDU IDU (
+      .clk(clk),
+      .rstn(resetn),
+      .inst(inst),
+      .PC(pc),
+      .Result(Result),
+      .Ivalid(Ivalid),
+      .Wvalid(Wvalid),
+      .Pready(Pready),
+      .Wready(Wready),
+      .ALUResult(ALUResult),
+      .Jal(Jal),
+      .Jalr(Jalr),
+      .Bne(Bne),
+      .Beq(Beq),
+      .Bltsu(Bltsu),
+      .Bgesu(Bgesu),
+      .Ecall(Ecall),
+      .Mret(Mret),
+      .RegWrite(RegWrite),
+      .MemRead(MemRead),
+      .MemWrite(MemWrite),
+      .CsrWrite(CsrWrite),
+      .Wmask(Wmask),
+      .Ropcode(Ropcode),
+      .ResultSrc(ResultSrc),
+      .ALUSrcA(ALUSrcA),
+      .ALUSrcB(ALUSrcB),
+      .ALUOp(ALUOp),
+      .CsrSrc(CsrSrc),
+      .Evalid(Evalid),
+      .Eready(Eready),
+      .RD1(RD1),
+      .RD2(RD2),
+      .ImmExt(ImmExt),
+      .CsrRead(CsrRead)
+   );
+
+   ysyx_23060184_EXU EXU (
+      .clk(clk),
+      .rstn(resetn),
+      .RD1(RD1),
+      .RD2(RD2),
+      .ALUOp(ALUOp),
+      .PC(pc),
+      .CsrRead(CsrRead),
+      .ImmExt(ImmExt),
+      .ALUSrcA(ALUSrcA),
+      .ALUSrcB(ALUSrcB),
+      .Jal(Jal),
+      .Jalr(Jalr),
+      .Beq(Beq),
+      .Bne(Bne),
+      .Bltsu(Bltsu),
+      .Bgesu(Bgesu),
+      .Ecall(Ecall),
+      .Mret(Mret),
+      .ALUResult(ALUResult),
+      .PCTarget(PCTarget),
+      .PCSrc(PCSrc)
+   );
+
+
+   /*
       Data Memory related AXI4 signals Begin
    */
 
@@ -79,99 +178,50 @@ module ysyx_23060184_SGC(
       Data Memory related AXI4 signals End
    */
 
-   ysyx_23060184_DataMem DataMem (
+   ysyx_23060184_WBU WBU (
       .clk(clk),
-      .resetn(resetn),
-      .raddr(ALUResult),
+      .rstn(resetn),
+      .pc(pc),
+      .ALUResult(ALUResult),
+      .Pready(Pready),
       .Evalid(Evalid),
       .grant(grant),
-      .Wvalid(Wvalid),
-      .Wready(Wready),
-      .Pready(Pready),
-      .araddr(d_araddr),
-      .arvalid(d_arvalid),
-
-      /*
-         SRAM AXI4 input signals Begin
-      */
       .s_aready(s_aready),
       .s_rdata(s_rdata),
       .s_rresp(s_rresp),
       .s_rvalid(s_rvalid),
       .s_awready(s_awready),
       .s_wready(s_wready),
-      .s_bvalid(s_bvalid),
       .s_bresp(s_bresp),
-      /*
-         SRAM AXI4 input signals End
-      */
-
-      /*
-         UART AXI4 input signals Begin
-      */
+      .s_bvalid(s_bvalid),
       .u_aready(u_aready),
       .u_rdata(u_rdata),
       .u_rresp(u_rresp),
       .u_rvalid(u_rvalid),
       .u_awready(u_awready),
       .u_wready(u_wready),
-      .u_bvalid(u_bvalid),
       .u_bresp(u_bresp),
-      /*
-         UART AXI4 input signals End
-      */
-
-
-      .rready(d_rready),
-      .awaddr(d_awaddr),
-      .awvalid(d_awvalid),
-      .wdata(d_wdata),
-      .wstrb(d_wstrb),
-      .wvalid(d_wvalid),
-      .bready(d_bready),
+      .u_bvalid(u_bvalid),
       .MemRead(MemRead),
       .MemWrite(MemWrite),
-      .wmask(Wmask),
-      .data(RD2),
-      .ropcode(Ropcode),
+      .Ropcode(Ropcode),
+      .Wmask(Wmask),
+      .RD2(RD2),
+      .ResultSrc(ResultSrc),
+      .CsrRead(CsrRead),
+      .Wready(Wready),
+      .Wvalid(Wvalid),
+      .d_araddr(d_araddr),
+      .d_arvalid(d_arvalid),
+      .d_rready(d_rready),
+      .d_awaddr(d_awaddr),
+      .d_awvalid(d_awvalid),
+      .d_wdata(d_wdata),
+      .d_wstrb(d_wstrb),
+      .d_wvalid(d_wvalid),
+      .d_bready(d_bready),
       .Drequst(Drequst),
-      .result(ReadData)
-   );
-
-   /*
-      Inst Memory related AXI4 signals Begin
-   */
-
-   wire [`DATA_WIDTH - 1:0]         i_araddr;
-   wire                             i_arvalid;
-   wire                             i_rready;
-
-   /*
-      Inst Memory related AXI4 signals End
-   */
-
-   ysyx_23060184_InstMem InstMem (
-      .clk(clk),
-      .resetn(resetn),
-      .A(pc),
-      .grant(grant),
-      .araddr(i_araddr),
-      .arvalid(i_arvalid),
-      .aready(s_aready),
-      .rdata(s_rdata),
-      .rresp(s_rresp),
-      .rvalid(s_rvalid),
-      .rready(i_rready),
-      .wready(s_wready),
-      .bresp(s_bresp),
-      .bvalid(s_bvalid),
-      .awready(s_awready),
-      .Pvalid(Pvalid),
-      .Eready(Eready),
-      .Ivalid(Ivalid),
-      .Iready(Iready),
-      .Irequst(Irequst),
-      .RD(inst)
+      .Result(Result)
    );
 
    wire [`NUM_ARB_MASTERS - 1:0] grant;
@@ -300,139 +350,4 @@ module ysyx_23060184_SGC(
       */
    );
 
-   ysyx_23060184_ControlUnit ControlUnit (
-      .opcode(inst[6:0]),
-      .funct3(inst[14:12]),
-      .funct7(inst[31:25]),
-      .funct12(inst[31:20]),
-      .PCSrc(PCSrc),
-      .Zero(Zero),
-      .Flag(ALUResult[0]),
-      .RegWrite(RegWrite),
-      .ResultSrc(ResultSrc),
-      .ExtOp(ExtOp),
-      .ALUSrcA(ALUSrcA),
-      .ALUSrcB(ALUSrcB),
-      .ALUOp(ALUOp),
-      .Wmask(Wmask),
-      .Ropcode(Ropcode),
-      .MemRead(MemRead),
-      .MemWrite(MemWrite),
-      .CsrWrite(CsrWrite),
-      .ecall(ecall),
-      .CsrSrc(CsrSrc),
-      .mret(mret)
-   );
-   ysyx_23060184_PC PC (
-      .clk(clk),
-      .rstn(resetn),
-      .Wvalid(Wvalid),
-      .Pvalid(Pvalid),
-      .Iready(Iready),
-      .Pready(Pready),
-      .NPC(Npc),
-      .PC(pc)
-   );
-   ysyx_23060184_PCPlus4 PCPLus4 (
-      .PC(pc),
-      .PCPlus4(PCPlus4)
-   );
-   // ysyx_23060184_NPC NPC (
-   //    .clk(clk),
-   //    .resetn(resetn),
-   //    .Npc_op(Npc_op),
-   //    .PC(pc),
-   //    .Inst(inst),
-   //    .ALUResult(ALUResult),
-   //    .Imm20(inst[31:12]),
-   //    .CsrRead(CsrRead),
-   //    .NPC(Npc)
-   // );
-   ysyx_23060184_Extend Extend (
-      .Inst(inst),
-      .ExtOp(ExtOp),
-      .ImmExt(ImmExt)
-   );
-   ysyx_23060184_ALU ALU (
-      .SrcA(SrcA),
-      .SrcB(SrcB),
-      .ALUOp(ALUOp),
-      .Zero(Zero),
-      .ALUResult(ALUResult)
-   );
-   ysyx_23060184_PCTarget PCTArget (
-      .PC(pc),
-      .ImmExt(ImmExt),
-      .PCTarget(PCTarget)
-   );
-
-   // Multiplexers
-   ysyx_23060184_Mux_PC_Src Mux_PC_Src (
-      .PCSrc(PCSrc),
-      .PCPlus4(PCPlus4),
-      .PCTarget(PCTarget), 
-      .ALUResult(ALUResult),
-      .CsrRead(CsrRead),
-      .NPC(Npc)
-   );
-
-   ysyx_23060184_Mux_Result_Src Mux_Result_Src (
-      .ResultSrc(ResultSrc),
-      .PC(pc),
-      .ALUResult(ALUResult),
-      .ReadData(ReadData),
-      .CsrRead(CsrRead),
-      .Result(Result)
-   );
-
-   ysyx_23060184_Mux_ALUSrcA Mux_ALUSrcA (
-      .ALUSrcA(ALUSrcA),
-      .PC(pc),
-      .RD1(RD1),
-      .SrcA(SrcA)
-   );
-
-   ysyx_23060184_Mux_ALUSrcB Mux_ALUSrcB (
-      .ALUSrcB(ALUSrcB),
-      .ImmExt(ImmExt),
-      .RD2(RD2),
-      .CsrRead(CsrRead),
-      .SrcB(SrcB)
-   );   
-
-   ysyx_23060184_RegFile RegFile (
-      .clk(clk),
-      .resetn(resetn),
-      .wdata(Result),
-      .waddr(inst[11:7]),
-      .wen(RegWrite),
-      .raddr1(inst[19:15]),
-      .raddr2(inst[24:20]),
-      .rdata1(RD1),
-      .rdata2(RD2),
-      .Ivalid(Ivalid),
-      .Wvalid(Wvalid),
-      .Pready(Pready),
-      .Wready(Wready),
-      .Evalid(Evalid),
-      .Eready(Eready),
-      .ecall(ecall)
-   );
-
-   ysyx_23060184_CSReg CSReg (
-      .clk(clk),
-      .ecall(ecall),
-      .mret(mret),
-      .pc(pc),
-      .wdata(ALUResult),
-      .waddr(inst[29:20]), // TODO: Expand to 12 bits addr
-      .wen(CsrWrite),
-      .raddr(inst[29:20]),
-      .rdata(CsrRead)
-   );
-
-   ysyx_23060184_Decode Deocde (
-      .clk(clk),
-      .inst(inst)
-   );
 endmodule 

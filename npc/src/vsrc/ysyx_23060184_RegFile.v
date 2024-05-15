@@ -10,7 +10,7 @@ module ysyx_23060184_RegFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
   input [ADDR_WIDTH-1:0]      raddr2,
   input                       Ivalid,
   input                       Wvalid,
-  input                       Pready,
+  input                       Pready, // Warning: Change Pready to Iready, to be tested
   input                       Wready,
   output reg                  Evalid,
   output reg                  Eready,
@@ -28,7 +28,7 @@ module ysyx_23060184_RegFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
   end
 
   always @(posedge clk) begin
-    if (Wvalid && Pready) begin
+    if (Wvalid && Pready) begin // Warning: Change Pready to Iready, to be tested
       if (wen && waddr != 5'b00000) begin
         rf[waddr] <= wdata;
       end
@@ -48,6 +48,6 @@ module ysyx_23060184_RegFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
 
   assign rdata1 = (raddr1 == 0) ? `INITIAL_VAL : rf[raddr1];
   assign rdata2 = (raddr2 == 0 && ~ecall) ? `INITIAL_VAL : 
-                  (ecall) ? rf[15] : rf[raddr2]; // rv32e or rv32 ? rf[17] : rf[15]
+                  (ecall) ? rf[15] : rf[raddr2]; // rv32 or rv32e ? rf[17] : rf[15]
 
 endmodule
