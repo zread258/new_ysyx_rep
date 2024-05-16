@@ -21,6 +21,8 @@
 `define OPCODE_LENGTH    7
 // ACCESS ERROR WIDTH
 `define ACERR_WIDTH      2
+// Register Length
+`define REG_LENGTH       5
 
 // R-Type instructions
 `define INST_R_TYPE     7'b0110011  // R-Type opcode, decode via function code
@@ -142,11 +144,6 @@
 `define RESULT_SRC_PCPlus4 3'b011      // Register write source: NPC
 `define RESULT_SRC_CSR     3'b100      // Register write source: CSR
 // `define RESULT_SRC_MEM     2'b10      // Register write source: Data Memory
-
-// CsrSrc Control Signals
-`define CSR_SRC_LENGTH  2           // Bits of signal CsrSrc
-`define CSR_SRC_PC      2'b00
-`define CSR_SRC_ALU     2'b01
 
 // ExtOp Control Signals
 `define EXT_OP_LENGTH   3           // Bits of Signal ExtOp

@@ -8,42 +8,14 @@
 module ysyx_23060184_SGC(
       input                          clk, 
       input                          resetn,
-      output reg [`DATA_WIDTH - 1:0] pc,
-      output reg [`DATA_WIDTH - 1:0] inst
+      output     [`DATA_WIDTH - 1:0] pc,
+      output     [`DATA_WIDTH - 1:0] inst
    );
 
    /* 
       CPU-related signals Begin
    */
 
-   wire [`DATA_WIDTH - 1:0]          ImmExt;
-   wire [`DATA_WIDTH - 1:0]          ALUResult;
-   wire [`DATA_WIDTH - 1:0]          PCTarget;
-   wire [`DATA_WIDTH - 1:0]          RD1;
-   wire [`DATA_WIDTH - 1:0]          RD2;
-   wire [`PC_SRC_LENGTH - 1:0]       PCSrc;
-   wire [`ALU_OP_LENGTH - 1:0]       ALUOp;
-   wire [`EXT_OP_LENGTH - 1:0]       ExtOp;
-   wire [`RESULT_SRC_LENGTH - 1:0]   ResultSrc;
-   wire [`WMASK_LENGTH - 1:0]        Wmask;
-   wire [`DATA_WIDTH - 1:0]          Result;
-   wire [`DATA_WIDTH - 1:0]          SrcA;
-   wire [`DATA_WIDTH - 1:0]          SrcB;
-   wire [`ALU_SRCA_LENGTH - 1:0]     ALUSrcA;
-   wire [`ALU_SRCB_LENGTH - 1:0]     ALUSrcB;
-   wire [`DATA_WIDTH - 1:0]          ReadData;
-   wire [`ROPCODE_LENGTH - 1:0]      Ropcode;
-   wire [`CSR_SRC_LENGTH - 1:0]      CsrSrc;
-   wire [`DATA_WIDTH - 1:0]          CsrRead;
-   wire [`DATA_WIDTH - 1:0]          CsrWdata;
-
-   wire RegWrite;
-   wire CsrWrite;
-   wire MemRead;
-   wire MemWrite;
-   wire Zero;
-   wire ecall;
-   wire mret;
    wire Pvalid;
    wire Pready;
    wire Ivalid;
@@ -71,13 +43,18 @@ module ysyx_23060184_SGC(
    wire                             i_arvalid;
    wire                             i_rready;
 
+
+   wire [`DATA_WIDTH - 1:0] PCF, InstF, PCPlus4F;
+   assign pc = PCF;
+   assign inst = InstF;
+
    ysyx_23060184_IFU IFU (
       .clk(clk),
       .rstn(resetn),
-      .PCSrc(PCSrc),
-      .PCTarget(PCTarget),
-      .ALUResult(ALUResult),
-      .CsrRead(CsrRead),
+      .PCSrc(PCSrcE),
+      .PCTarget(PCTargetE),
+      .ALUResult(ALUResultE),
+      .CsrRead(CsrReadD),
       .Wvalid(Wvalid),
       .Dready(Dready),
       .grant(grant),
@@ -86,7 +63,7 @@ module ysyx_23060184_SGC(
       .rresp(s_rresp),
       .rvalid(s_rvalid),
       .Pready(Pready),
-      .pc(pc),
+      .pc(PCF),
       .araddr(i_araddr),
       .arvalid(i_arvalid),
       .rready(i_rready),
@@ -94,92 +71,218 @@ module ysyx_23060184_SGC(
       .bresp(s_bresp),
       .bvalid(s_bvalid),
       .awready(s_awready),
-      .inst(inst),
+      .inst(InstF),
       .Ivalid(Ivalid),
       .Irequst(Irequst),
-      .PCPlus4(PCPlus4)
+      .PCPlus4(PCPlus4F)
    );
 
-   wire [`DATA_WIDTH - 1:0] PCPlus4;
    wire [`DATA_WIDTH - 1:0] PCD, PCPlus4D, InstD;
 
-  //  ysyx_23060184_RegIFID RegIFID (
-  //     .clk(clk),
-  //     .rstn(resetn),
-  //     .InstF(inst),
-  //     .PCPlus4F(PCPlus4F),
-  //     .PCF(pc),
-  //     .InstD(InstD),
-  //     .PCPlus4D(PCPlus4D),
-  //     .PCD(PCD)
-  //  );
+   ysyx_23060184_RegIFID RegIFID (
+      .clk(clk),
+      .rstn(resetn),
+      .Ivalid(Ivalid),
+      .Dready(Dready),
+      .InstF(inst),
+      .PCPlus4F(PCPlus4F),
+      .PCF(pc),
+      .InstD(InstD),
+      .PCPlus4D(PCPlus4D),
+      .PCD(PCD)
+   );
 
-   wire Jal, Jalr, Beq, Bne, Bltsu, Bgesu, Ecall, Mret;
+   wire JalD, JalrD, BeqD, BneD, BltsuD, BgesuD, EcallD, MretD;
+   wire RegWriteD, MemReadD, MemWriteD, CsrWriteD;
+   wire [`WMASK_LENGTH - 1:0]        WmaskD;
+   wire [`ROPCODE_LENGTH - 1:0]      RopcodeD;
+   wire [`RESULT_SRC_LENGTH - 1:0]   ResultSrcD;
+   wire [`ALU_SRCA_LENGTH - 1:0]     ALUSrcAD;
+   wire [`ALU_SRCB_LENGTH - 1:0]     ALUSrcBD;
+   wire [`ALU_OP_LENGTH - 1:0]       ALUOpD;
+   wire [`DATA_WIDTH - 1:0]          ImmExtD, RD1D, RD2D, CsrReadD;
 
    ysyx_23060184_IDU IDU (
       .clk(clk),
       .rstn(resetn),
-      .inst(inst),
-      .PC(pc),
-      .Result(Result),
+      .inst(InstD),
+      .PCPlus4(PCPlus4W),
+      .Result(ResultW),
       .Ivalid(Ivalid),
       .Wvalid(Wvalid),
       .Pready(Pready),
       .Eready(Eready),
-      .ALUResult(ALUResult),
-      .Jal(Jal),
-      .Jalr(Jalr),
-      .Bne(Bne),
-      .Beq(Beq),
-      .Bltsu(Bltsu),
-      .Bgesu(Bgesu),
-      .Ecall(Ecall),
-      .Mret(Mret),
-      .RegWrite(RegWrite),
-      .MemRead(MemRead),
-      .MemWrite(MemWrite),
-      .CsrWrite(CsrWrite),
-      .Wmask(Wmask),
-      .Ropcode(Ropcode),
-      .ResultSrc(ResultSrc),
-      .ALUSrcA(ALUSrcA),
-      .ALUSrcB(ALUSrcB),
-      .ALUOp(ALUOp),
-      .CsrSrc(CsrSrc),
+      .ALUResult(ALUResultW),
+      .Jal(JalD),
+      .Jalr(JalrD),
+      .Bne(BneD),
+      .Beq(BeqD),
+      .Bltsu(BltsuD),
+      .Bgesu(BgesuD),
+      .Ecall(EcallD),
+      .Mret(MretD),
+      .RegWriteD(RegWriteD),
+      .RegWriteW(RegWriteW),
+      .MemRead(MemReadD),
+      .MemWrite(MemWriteD),
+      .CsrWriteD(CsrWriteD),
+      .CsrWriteW(CsrWriteW),
+      .Wmask(WmaskD),
+      .Ropcode(RopcodeD),
+      .ResultSrc(ResultSrcD),
+      .ALUSrcA(ALUSrcAD),
+      .ALUSrcB(ALUSrcBD),
+      .ALUOp(ALUOpD),
       .Dvalid(Dvalid),
       .Dready(Dready),
-      .RD1(RD1),
-      .RD2(RD2),
-      .ImmExt(ImmExt),
-      .CsrRead(CsrRead)
+      .RD1(RD1D),
+      .RD2(RD2D),
+      .ImmExt(ImmExtD),
+      .CsrRead(CsrReadD)
    );
+
+   wire JalE, JalrE, BeqE, BneE, BltsuE, BgesuE, EcallE, MretE;
+   wire RegWriteE, MemReadE, MemWriteE, CsrWriteE;
+   wire [`WMASK_LENGTH - 1:0]        WmaskE;
+   wire [`ROPCODE_LENGTH - 1:0]      RopcodeE;
+   wire [`RESULT_SRC_LENGTH - 1:0]   ResultSrcE;
+   wire [`ALU_SRCA_LENGTH - 1:0]     ALUSrcAE;
+   wire [`ALU_SRCB_LENGTH - 1:0]     ALUSrcBE;
+   wire [`ALU_OP_LENGTH - 1:0]       ALUOpE;
+   wire [`DATA_WIDTH - 1:0]          PCE, ImmExtE, PCPlus4E, RD1E, RD2E, CsrReadE;
+   wire [`REG_LENGTH - 1:0]          Rs1E, Rs2E, RdE;
+
+   ysyx_23060184_RegIDEXE RegIDEXE (
+      .clk(clk),
+      .resetn(resetn),
+      .Dvalid(Dvalid),
+      .Eready(Eready),
+      .RegWriteD(RegWriteD),
+      .MemReadD(MemReadD),
+      .MemWriteD(MemWriteD),
+      .CsrWriteD(CsrWriteD),
+      .JalD(JalD),
+      .JalrD(JalrD),
+      .BneD(BneD),
+      .BeqD(BeqD),
+      .BltsuD(BltsuD),
+      .BgesuD(BgesuD),
+      .EcallD(EcallD),
+      .MretD(MretD),
+      .WmaskD(WmaskD),
+      .RopcodeD(RopcodeD),
+      .ResultSrcD(ResultSrcD),
+      .ALUSrcAD(ALUSrcAD),
+      .ALUSrcBD(ALUSrcBD),
+      .ALUOpD(ALUOpD),
+      .RD1D(RD1D),
+      .RD2D(RD2D),
+      .PCD(PCD),
+      .ImmExtD(ImmExtD),
+      .PCPlus4D(PCPlus4D),
+      .CsrReadD(CsrReadD),
+      .Rs1D(InstD[19:15]),
+      .Rs2D(InstD[24:20]),
+      .RdD(InstD[11:7]),
+      .RegWriteE(RegWriteE),
+      .MemReadE(MemReadE),
+      .MemWriteE(MemWriteE),
+      .CsrWriteE(CsrWriteE),
+      .JalE(JalE),
+      .JalrE(JalrE),
+      .BneE(BneE),
+      .BeqE(BeqE),
+      .BltsuE(BltsuE),
+      .BgesuE(BgesuE),
+      .EcallE(EcallE),
+      .MretE(MretE),
+      .WmaskE(WmaskE),
+      .RopcodeE(RopcodeE),
+      .ResultSrcE(ResultSrcE),
+      .ALUSrcAE(ALUSrcAE),
+      .ALUSrcBE(ALUSrcBE),
+      .ALUOpE(ALUOpE),
+      .RD1E(RD1E),
+      .RD2E(RD2E),
+      .PCE(PCE),
+      .ImmExtE(ImmExtE),
+      .PCPlus4E(PCPlus4E),
+      .CsrReadE(CsrReadE),
+      .Rs1E(Rs1E),
+      .Rs2E(Rs2E),
+      .RdE(RdE)
+   );
+
+   wire [`DATA_WIDTH - 1:0]          ALUResultE, PCTargetE, WriteDataE;
+   wire [`PC_SRC_LENGTH - 1:0]       PCSrcE;
 
    ysyx_23060184_EXU EXU (
       .clk(clk),
       .rstn(resetn),
       .Dvalid(Dvalid),
       .Mready(Mready),
-      .RD1(RD1),
-      .RD2(RD2),
-      .ALUOp(ALUOp),
-      .PC(pc),
-      .CsrRead(CsrRead),
-      .ImmExt(ImmExt),
-      .ALUSrcA(ALUSrcA),
-      .ALUSrcB(ALUSrcB),
-      .Jal(Jal),
-      .Jalr(Jalr),
-      .Beq(Beq),
-      .Bne(Bne),
-      .Bltsu(Bltsu),
-      .Bgesu(Bgesu),
-      .Ecall(Ecall),
-      .Mret(Mret),
-      .ALUResult(ALUResult),
-      .PCTarget(PCTarget),
+      .RD1(RD1E),
+      .RD2(RD2E),
+      .ALUOp(ALUOpE),
+      .PC(PCE),
+      .CsrRead(CsrReadE),
+      .ImmExt(ImmExtE),
+      .ALUSrcA(ALUSrcAE),
+      .ALUSrcB(ALUSrcBE),
+      .Jal(JalE),
+      .Jalr(JalrE),
+      .Beq(BeqE),
+      .Bne(BneE),
+      .Bltsu(BltsuE),
+      .Bgesu(BgesuE),
+      .Ecall(EcallE),
+      .Mret(MretE),
+      .ALUResult(ALUResultE),
+      .PCTarget(PCTargetE),
+      .WriteData(WriteDataE),
       .Evalid(Evalid),
       .Eready(Eready),
-      .PCSrc(PCSrc)
+      .PCSrc(PCSrcE)
+   );
+
+   wire [`DATA_WIDTH - 1:0]          ALUResultM, PCTargetM, WriteDataM;
+   wire RegWriteM, MemReadM, MemWriteM, CsrWriteM;
+   wire [`WMASK_LENGTH - 1:0]        WmaskM;
+   wire [`ROPCODE_LENGTH - 1:0]      RopcodeM;
+   wire [`RESULT_SRC_LENGTH - 1:0]   ResultSrcM;
+   wire [`DATA_WIDTH - 1:0]          PCPlus4M, CsrReadM;
+   wire [`REG_LENGTH - 1:0]          RdM;
+
+
+   ysyx_23060184_RegEXMEM RegEXMEM (
+      .clk(clk),
+      .resetn(resetn),
+      .Evalid(Evalid),
+      .Mready(Mready),
+      .RegWriteE(RegWriteE),
+      .MemReadE(MemReadE),
+      .MemWriteE(MemWriteE),
+      .WmaskE(WmaskE),
+      .RopcodeE(RopcodeE),
+      .ResultSrcE(ResultSrcE),
+      .WriteDataE(WriteDataE),
+      .CsrWriteE(CsrWriteE),
+      .ALUResultE(ALUResultE),
+      .PCPlus4E(PCPlus4E),
+      .CsrReadE(CsrReadE),
+      .RdE(RdE),
+      .RegWriteM(RegWriteM),
+      .MemReadM(MemReadM),
+      .MemWriteM(MemWriteM),
+      .CsrWriteM(CsrWriteM),
+      .WmaskM(WmaskM),
+      .RopcodeM(RopcodeM),
+      .ResultSrcM(ResultSrcM),
+      .WriteDataM(WriteDataM),
+      .PCPlus4M(PCPlus4M),
+      .CsrReadM(CsrReadM),
+      .RdM(RdM),
+      .ALUResultM(ALUResultM)
    );
 
 
@@ -201,10 +304,12 @@ module ysyx_23060184_SGC(
       Data Memory related AXI4 signals End
    */
 
+   wire [`DATA_WIDTH - 1:0]          ReadDataM;
+
    ysyx_23060184_MEMU MEMU (
       .clk(clk),
       .rstn(resetn),
-      .ALUResult(ALUResult),
+      .ALUResult(ALUResultM),
       .Wready(Wready),
       .Evalid(Evalid),
       .grant(grant),
@@ -224,11 +329,11 @@ module ysyx_23060184_SGC(
       .u_wready(u_wready),
       .u_bresp(u_bresp),
       .u_bvalid(u_bvalid),
-      .MemRead(MemRead),
-      .MemWrite(MemWrite),
-      .Ropcode(Ropcode),
-      .Wmask(Wmask),
-      .RD2(RD2),
+      .MemRead(MemReadM),
+      .MemWrite(MemWriteM),
+      .Ropcode(RopcodeM),
+      .Wmask(WmaskM),
+      .WriteData(WriteDataM),
       .Mready(Mready),
       .Mvalid(Mvalid),
       .d_araddr(d_araddr),
@@ -240,22 +345,53 @@ module ysyx_23060184_SGC(
       .d_wstrb(d_wstrb),
       .d_wvalid(d_wvalid),
       .d_bready(d_bready),
-      .Drequst(Drequst)
+      .Drequst(Drequst),
+      .ReadData(ReadDataM)
    );
+
+   wire RegWriteW, CsrWriteW;
+   wire [`RESULT_SRC_LENGTH - 1:0]   ResultSrcW;
+   wire [`DATA_WIDTH - 1:0]          ALUResultW, PCPlus4W, ReadDataW, CsrReadW;
+   wire [`REG_LENGTH - 1:0]          RdW;
+
+   ysyx_23060184_RegMEMWB RegMEMWB (
+      .clk(clk),
+      .resetn(resetn),
+      .Mvalid(Mvalid),
+      .Wready(Wready),
+      .RegWriteM(RegWriteM),
+      .CsrWriteM(CsrWriteM),
+      .ResultSrcM(ResultSrcM),
+      .ALUResultM(ALUResultM),
+      .PCPlus4M(PCPlus4M),
+      .ReadDataM(ReadDataM),
+      .CsrReadM(CsrReadM),
+      .RdM(RdM),
+      .RegWriteW(RegWriteW),
+      .CsrWriteW(CsrWriteW),
+      .ResultSrcW(ResultSrcW),
+      .ALUResultW(ALUResultW),
+      .PCPlus4W(PCPlus4W),
+      .ReadDataW(ReadDataW),
+      .CsrReadW(CsrReadW),
+      .RdW(RdW)
+   );
+
+   wire [`DATA_WIDTH - 1:0] ResultW;
 
    ysyx_23060184_WBU WBU (
       .clk(clk),
       .rstn(resetn),
       .Mvalid(Mvalid),
       .Pready(Pready),
-      .ResultSrc(ResultSrc),
-      .PCPlus4(PCPlus4),
-      .ALUResult(ALUResult),
-      .ReadData(ReadData),
-      .CsrRead(CsrRead),
+      .ResultSrc(ResultSrcW),
+      .PCPlus4(PCPlus4W),
+      .ALUResult(ALUResultW),
+      .ReadData(ReadDataW),
+      .CsrRead(CsrReadW),
       .Wready(Wready),
       .Wvalid(Wvalid),
-      .Result(Result)
+      .Result(ResultW)
    );
 
    wire [`NUM_ARB_MASTERS - 1:0] grant;

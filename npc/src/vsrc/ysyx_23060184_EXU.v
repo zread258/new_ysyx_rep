@@ -63,6 +63,8 @@ module ysyx_23060184_EXU (
         ALU Output Signals End
     */
 
+    output reg [`DATA_WIDTH - 1:0]      WriteData, // ToDo: Data Hazard
+
     output [`DATA_WIDTH - 1:0]          PCTarget,
     output [`PC_SRC_LENGTH - 1:0]       PCSrc
     
@@ -71,6 +73,8 @@ module ysyx_23060184_EXU (
     wire Zero;
 
     wire [`DATA_WIDTH - 1:0] SrcA, SrcB;
+
+    assign WriteData = RD2;
 
     ysyx_23060184_Mux_ALUSrcA Mux_ALUSrcA (
         .ALUSrcA(ALUSrcA),

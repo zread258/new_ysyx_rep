@@ -11,7 +11,7 @@ module ysyx_23060184_IDU (
     */
 
     input [`DATA_WIDTH - 1:0]           Result, // Change to ResultW
-    // input [`DATA_WIDTH - 1:0]           RegWriteW, // TODO: Add when change to pipeline
+    input                               RegWriteW, // TODO: Add when change to pipeline
     input                               Ivalid,
     input                               Wvalid,
     input                               Pready,
@@ -26,8 +26,8 @@ module ysyx_23060184_IDU (
     */
 
     input [`DATA_WIDTH - 1:0]           ALUResult, // Change to ALUResultW
-    // input [`DATA_WIDTH - 1:0]           CsrWriteW, TODO: Add when change to pipeline
-    input [`DATA_WIDTH - 1:0]           PC,
+    input                               CsrWriteW, // TODO: Add when change to pipeline
+    input [`DATA_WIDTH - 1:0]           PCPlus4,
 
     /*
         CSReg Input Signals End
@@ -47,17 +47,16 @@ module ysyx_23060184_IDU (
     output                              Bgesu,
     output                              Ecall,
     output                              Mret,
-    output                              RegWrite,
+    output                              RegWriteD,
     output                              MemRead,
     output                              MemWrite,
-    output                              CsrWrite,
+    output                              CsrWriteD,
     output [`WMASK_LENGTH - 1:0]        Wmask,
     output [`ROPCODE_LENGTH - 1:0]      Ropcode,
     output [`RESULT_SRC_LENGTH - 1:0]   ResultSrc,
     output [`ALU_SRCA_LENGTH - 1:0]     ALUSrcA,
     output [`ALU_SRCB_LENGTH - 1:0]     ALUSrcB,
     output [`ALU_OP_LENGTH - 1:0]       ALUOp,
-    output [`CSR_SRC_LENGTH - 1:0]      CsrSrc,
 
     /*
         ControlUnit Output Signals End
@@ -98,6 +97,8 @@ module ysyx_23060184_IDU (
 
     wire [`EXT_OP_LENGTH - 1:0]         ExtOp;
 
+    wire [`DATA_WIDTH - 1:0]            PC = PCPlus4 - 4;
+
     ysyx_23060184_Decode Deocde (
       .clk(clk),
       .inst(inst)
@@ -114,7 +115,7 @@ module ysyx_23060184_IDU (
       .Beq(Beq),  
       .Bltsu(Bltsu),
       .Bgesu(Bgesu),
-      .RegWrite(RegWrite),
+      .RegWrite(RegWriteD),
       .ResultSrc(ResultSrc),
       .ExtOp(ExtOp),
       .ALUSrcA(ALUSrcA),
@@ -124,9 +125,8 @@ module ysyx_23060184_IDU (
       .Ropcode(Ropcode),
       .MemRead(MemRead),
       .MemWrite(MemWrite),
-      .CsrWrite(CsrWrite),
+      .CsrWrite(CsrWriteD),
       .Ecall(Ecall),
-      .CsrSrc(CsrSrc),
       .Mret(Mret)
    );
 
@@ -135,7 +135,7 @@ module ysyx_23060184_IDU (
       .resetn(rstn),
       .wdata(Result),
       .waddr(inst[11:7]),
-      .wen(RegWrite),
+      .wen(RegWriteW),
       .raddr1(inst[19:15]),
       .raddr2(inst[24:20]),
       .rdata1(RD1),
@@ -162,7 +162,7 @@ module ysyx_23060184_IDU (
       .pc(PC),
       .wdata(ALUResult),
       .waddr(inst[29:20]), // TODO: Expand to 12 bits addr
-      .wen(CsrWrite),
+      .wen(CsrWriteW),
       .raddr(inst[29:20]),
       .Wvalid(Wvalid),
       .Pready(Pready),

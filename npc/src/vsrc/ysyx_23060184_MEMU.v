@@ -4,116 +4,98 @@ module ysyx_23060184_MEMU (
     input                               rstn,
 
 
-    /*
-        DataMem Input Signals Begin
-    */
+    input [`DATA_WIDTH - 1:0]           ALUResult,
 
-        input [`DATA_WIDTH - 1:0]           ALUResult,
+    // Unit Handshake signals
+    input                               Wready,
+    input                               Evalid,
+    input [`NUM_ARB_MASTERS - 1:0]      grant,
 
-        // Unit Handshake signals
-        input                               Wready,
-        input                               Evalid,
-        input [`NUM_ARB_MASTERS - 1:0]      grant,
+    /* 
+        SRAM AXI4 Handshake signals Begin
+    */ 
 
-        /* 
-            SRAM AXI4 Handshake signals Begin
-        */ 
+    // Read Addr Channel 
+    input                               s_aready,
+    // Read Channel
+    input [`DATA_WIDTH - 1:0]           s_rdata,
+    input [`ACERR_WIDTH - 1:0]          s_rresp,
+    input                               s_rvalid,
+    // Write Addr Channel
+    input                               s_awready,
+    // Write Channel
+    input                               s_wready,
+    // Write Response Channel
+    input                               s_bvalid,
+    input [`ACERR_WIDTH - 1:0]          s_bresp,
 
-        // Read Addr Channel 
-        input                               s_aready,
-        // Read Channel
-        input [`DATA_WIDTH - 1:0]           s_rdata,
-        input [`ACERR_WIDTH - 1:0]          s_rresp,
-        input                               s_rvalid,
-        // Write Addr Channel
-        input                               s_awready,
-        // Write Channel
-        input                               s_wready,
-        // Write Response Channel
-        input                               s_bvalid,
-        input [`ACERR_WIDTH - 1:0]          s_bresp,
-
-        /* 
-            SRAM AXI4 Handshake signals End
-        */ 
+    /* 
+        SRAM AXI4 Handshake signals End
+    */ 
 
 
-        /* 
-            UART AXI4 Handshake signals Begin
-        */ 
+    /* 
+        UART AXI4 Handshake signals Begin
+    */ 
 
-        // Read Addr Channel 
-        input                               u_aready,
-        // Read Channel
-        input [`DATA_WIDTH - 1:0]           u_rdata,
-        input [`ACERR_WIDTH - 1:0]          u_rresp,
-        input                               u_rvalid,
-        // Write Addr Channel
-        input                               u_awready,
-        // Write Channel
-        input                               u_wready,
-        // Write Response Channel
-        input                               u_bvalid,
-        input [`ACERR_WIDTH - 1:0]          u_bresp,
+    // Read Addr Channel 
+    input                               u_aready,
+    // Read Channel
+    input [`DATA_WIDTH - 1:0]           u_rdata,
+    input [`ACERR_WIDTH - 1:0]          u_rresp,
+    input                               u_rvalid,
+    // Write Addr Channel
+    input                               u_awready,
+    // Write Channel
+    input                               u_wready,
+    // Write Response Channel
+    input                               u_bvalid,
+    input [`ACERR_WIDTH - 1:0]          u_bresp,
 
-        /* 
-            UART AXI4 Handshake signals End
-        */ 
-
-
-        // Operation signals
-        input                               MemRead,
-        input                               MemWrite,
-        input [`RESULT_SRC_LENGTH - 1:0]    Ropcode,
-        input [`WMASK_LENGTH - 1:0]         Wmask,
-        input [`DATA_WIDTH - 1:0]           RD2, // Change it to WriteData when it is pipelined
+    /* 
+        UART AXI4 Handshake signals End
+    */ 
 
 
-    /*
-        DataMem Input Signals End
-    */
+    // Operation signals
+    input                               MemRead,
+    input                               MemWrite,
+    input [`RESULT_SRC_LENGTH - 1:0]    Ropcode,
+    input [`WMASK_LENGTH - 1:0]         Wmask,
+    input [`DATA_WIDTH - 1:0]           WriteData,
 
-    /* --------------------------------------------- */
+/* --------------------------------------------- */
 
-    /*
-        DataMem Output Signals Begin
-    */
+    output reg                          Mready,
+    output reg                          Mvalid,
 
-        output reg                          Mready,
-        output reg                          Mvalid,
+    /* 
+        DataMem AXI4 Handshake signals Begin
+    */ 
 
-        /* 
-            DataMem AXI4 Handshake signals Begin
-        */ 
+    // Read Addr Channel 
+    output [`DATA_WIDTH - 1:0]          d_araddr,
+    output reg                          d_arvalid,
+    // Read Channel
+    output reg                          d_rready,
+    // Write Addr Channel
+    output reg [`DATA_WIDTH - 1:0]      d_wdata,
+    output [`DATA_WIDTH - 1:0]          d_awaddr,
+    output                              d_awvalid,
+    // Write Channel
+    output [`WMASK_LENGTH - 1:0]        d_wstrb,
+    output reg                          d_wvalid,
+    // Write Response Channel
+    output reg                          d_bready,
 
-        // Read Addr Channel 
-        output [`DATA_WIDTH - 1:0]          d_araddr,
-        output reg                          d_arvalid,
-        // Read Channel
-        output reg                          d_rready,
-        // Write Addr Channel
-        output reg [`DATA_WIDTH - 1:0]      d_wdata,
-        output [`DATA_WIDTH - 1:0]          d_awaddr,
-        output                              d_awvalid,
-        // Write Channel
-        output [`WMASK_LENGTH - 1:0]        d_wstrb,
-        output reg                          d_wvalid,
-        // Write Response Channel
-        output reg                          d_bready,
+    /* 
+        DataMem AXI4 Handshake signals End
+    */ 
 
-        /* 
-            DataMem AXI4 Handshake signals End
-        */ 
-
-        // Output signals
-        output reg                          Drequst
-
-    /*
-        DataMem Output Signals End
-    */
+    // Output signals
+    output reg [`DATA_WIDTH - 1:0]      ReadData,
+    output reg                          Drequst
 );
-
-    wire [`DATA_WIDTH - 1:0]        ReadData;
 
     ysyx_23060184_DataMem DataMem (
       .clk(clk),
@@ -168,7 +150,7 @@ module ysyx_23060184_MEMU (
       .MemRead(MemRead),
       .MemWrite(MemWrite),
       .wmask(Wmask),
-      .data(RD2),
+      .data(WriteData),
       .ropcode(Ropcode),
       .Drequst(Drequst),
       .result(ReadData)

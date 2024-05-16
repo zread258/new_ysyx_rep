@@ -38,8 +38,7 @@ module ysyx_23060184_ControlUnit (
     output [`EXT_OP_LENGTH - 1:0]       ExtOp,
     output [`ALU_SRCA_LENGTH - 1:0]     ALUSrcA,
     output [`ALU_SRCB_LENGTH - 1:0]     ALUSrcB,
-    output [`ALU_OP_LENGTH - 1:0]       ALUOp,
-    output [`CSR_SRC_LENGTH - 1:0]      CsrSrc
+    output [`ALU_OP_LENGTH - 1:0]       ALUOp
 );
     wire auipc, lui;
 
@@ -227,9 +226,6 @@ module ysyx_23060184_ControlUnit (
             (branch) ? `EXT_OP_B :
             (Jal) ? `EXT_OP_J :
             `EXT_OP_I;
-
-    assign CsrSrc = (Ecall) ? `CSR_SRC_PC :
-            (csrrw || csrrs) ? `CSR_SRC_ALU : 0;
 
     assign CsrWrite = (csrrw || csrrs) ? 1 : 0;
 
