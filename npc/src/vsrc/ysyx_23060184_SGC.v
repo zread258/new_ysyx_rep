@@ -45,13 +45,17 @@ module ysyx_23060184_SGC(
    wire ecall;
    wire mret;
    wire Pvalid;
+   wire Pready;
    wire Ivalid;
    wire Iready;
+   wire Dvalid;
+   wire Dready;
    wire Evalid;
    wire Eready;
+   wire Mvalid;
+   wire Mready;
    wire Wvalid;
    wire Wready;
-   wire Pready;
    wire Drequst;
    wire Irequst;
 
@@ -75,7 +79,7 @@ module ysyx_23060184_SGC(
       .ALUResult(ALUResult),
       .CsrRead(CsrRead),
       .Wvalid(Wvalid),
-      .Eready(Eready),
+      .Dready(Dready),
       .grant(grant),
       .aready(s_aready),
       .rdata(s_rdata),
@@ -92,8 +96,23 @@ module ysyx_23060184_SGC(
       .awready(s_awready),
       .inst(inst),
       .Ivalid(Ivalid),
-      .Irequst(Irequst)
+      .Irequst(Irequst),
+      .PCPlus4(PCPlus4)
    );
+
+   wire [`DATA_WIDTH - 1:0] PCPlus4;
+   wire [`DATA_WIDTH - 1:0] PCD, PCPlus4D, InstD;
+
+  //  ysyx_23060184_RegIFID RegIFID (
+  //     .clk(clk),
+  //     .rstn(resetn),
+  //     .InstF(inst),
+  //     .PCPlus4F(PCPlus4F),
+  //     .PCF(pc),
+  //     .InstD(InstD),
+  //     .PCPlus4D(PCPlus4D),
+  //     .PCD(PCD)
+  //  );
 
    wire Jal, Jalr, Beq, Bne, Bltsu, Bgesu, Ecall, Mret;
 
@@ -106,7 +125,7 @@ module ysyx_23060184_SGC(
       .Ivalid(Ivalid),
       .Wvalid(Wvalid),
       .Pready(Pready),
-      .Wready(Wready),
+      .Eready(Eready),
       .ALUResult(ALUResult),
       .Jal(Jal),
       .Jalr(Jalr),
@@ -127,8 +146,8 @@ module ysyx_23060184_SGC(
       .ALUSrcB(ALUSrcB),
       .ALUOp(ALUOp),
       .CsrSrc(CsrSrc),
-      .Evalid(Evalid),
-      .Eready(Eready),
+      .Dvalid(Dvalid),
+      .Dready(Dready),
       .RD1(RD1),
       .RD2(RD2),
       .ImmExt(ImmExt),
@@ -138,6 +157,8 @@ module ysyx_23060184_SGC(
    ysyx_23060184_EXU EXU (
       .clk(clk),
       .rstn(resetn),
+      .Dvalid(Dvalid),
+      .Mready(Mready),
       .RD1(RD1),
       .RD2(RD2),
       .ALUOp(ALUOp),
@@ -156,6 +177,8 @@ module ysyx_23060184_SGC(
       .Mret(Mret),
       .ALUResult(ALUResult),
       .PCTarget(PCTarget),
+      .Evalid(Evalid),
+      .Eready(Eready),
       .PCSrc(PCSrc)
    );
 
@@ -178,12 +201,11 @@ module ysyx_23060184_SGC(
       Data Memory related AXI4 signals End
    */
 
-   ysyx_23060184_WBU WBU (
+   ysyx_23060184_MEMU MEMU (
       .clk(clk),
       .rstn(resetn),
-      .pc(pc),
       .ALUResult(ALUResult),
-      .Pready(Pready),
+      .Wready(Wready),
       .Evalid(Evalid),
       .grant(grant),
       .s_aready(s_aready),
@@ -207,10 +229,8 @@ module ysyx_23060184_SGC(
       .Ropcode(Ropcode),
       .Wmask(Wmask),
       .RD2(RD2),
-      .ResultSrc(ResultSrc),
-      .CsrRead(CsrRead),
-      .Wready(Wready),
-      .Wvalid(Wvalid),
+      .Mready(Mready),
+      .Mvalid(Mvalid),
       .d_araddr(d_araddr),
       .d_arvalid(d_arvalid),
       .d_rready(d_rready),
@@ -220,7 +240,21 @@ module ysyx_23060184_SGC(
       .d_wstrb(d_wstrb),
       .d_wvalid(d_wvalid),
       .d_bready(d_bready),
-      .Drequst(Drequst),
+      .Drequst(Drequst)
+   );
+
+   ysyx_23060184_WBU WBU (
+      .clk(clk),
+      .rstn(resetn),
+      .Mvalid(Mvalid),
+      .Pready(Pready),
+      .ResultSrc(ResultSrc),
+      .PCPlus4(PCPlus4),
+      .ALUResult(ALUResult),
+      .ReadData(ReadData),
+      .CsrRead(CsrRead),
+      .Wready(Wready),
+      .Wvalid(Wvalid),
       .Result(Result)
    );
 

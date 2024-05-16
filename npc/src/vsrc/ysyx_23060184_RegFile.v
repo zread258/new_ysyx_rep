@@ -11,9 +11,9 @@ module ysyx_23060184_RegFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
   input                       Ivalid,
   input                       Wvalid,
   input                       Pready, // Warning: Change Pready to Iready, to be tested
-  input                       Wready,
-  output reg                  Evalid,
-  output reg                  Eready,
+  input                       Eready,
+  output reg                  Dvalid,
+  output reg                  Dready,
   input                       ecall,
   output reg [DATA_WIDTH-1:0] rdata1,
   output reg [DATA_WIDTH-1:0] rdata2
@@ -23,26 +23,31 @@ module ysyx_23060184_RegFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
 
   always @(posedge clk) begin
     if (~resetn) begin
-      Eready <= 1;
+      Dready <= 1;
     end
   end
+
+  /* =================Read Handshake and Transaction Section================== */
+
+
+  always @(posedge clk) begin
+    Dready <= 1;
+    if (Dready && Ivalid) begin
+      Dready <= 0;
+      Dvalid <= 1;
+    end
+    if (Dvalid && Eready) begin
+      Dvalid <= 0;
+    end
+  end
+
+  /* ================Write Handshake and Transaction Section================ */
 
   always @(posedge clk) begin
     if (Wvalid && Pready) begin // Warning: Change Pready to Iready, to be tested
       if (wen && waddr != 5'b00000) begin
         rf[waddr] <= wdata;
       end
-    end
-  end
-
-  always @(posedge clk) begin
-    Eready <= 1;
-    if (Eready && Ivalid) begin
-      Eready <= 0;
-      Evalid <= 1;
-    end
-    if (Evalid && Wready) begin
-      Evalid <= 0;
     end
   end
 

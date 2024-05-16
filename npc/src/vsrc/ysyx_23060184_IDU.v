@@ -15,7 +15,7 @@ module ysyx_23060184_IDU (
     input                               Ivalid,
     input                               Wvalid,
     input                               Pready,
-    input                               Wready,
+    input                               Eready,
 
     /*
         RegFile Input Signals End
@@ -68,8 +68,8 @@ module ysyx_23060184_IDU (
         RegFile Output Signals Begin
     */
 
-    output                              Evalid,
-    output                              Eready,
+    output                              Dvalid,
+    output                              Dready,
     output [`DATA_WIDTH-1:0]            RD1,
     output [`DATA_WIDTH-1:0]            RD2,
 
@@ -143,9 +143,9 @@ module ysyx_23060184_IDU (
       .Ivalid(Ivalid),
       .Wvalid(Wvalid),
       .Pready(Pready),
-      .Wready(Wready),
-      .Evalid(Evalid),
       .Eready(Eready),
+      .Dvalid(Dvalid),
+      .Dready(Dready),
       .ecall(Ecall)
    );
 

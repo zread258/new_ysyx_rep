@@ -34,7 +34,7 @@ module ysyx_23060184_InstMem(
 
     // Unit Handshake signals
     input                               Pvalid,
-    input                               Eready,
+    input                               Dready,
     output reg                          Ivalid,
     output reg                          Iready,
 
@@ -59,7 +59,7 @@ module ysyx_23060184_InstMem(
     end
 
     always @(posedge clk) begin
-        if (Ivalid && Eready) begin
+        if (Ivalid && Dready) begin
             Ivalid <= 0;
         end
     end

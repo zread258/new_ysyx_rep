@@ -2,6 +2,8 @@ module ysyx_23060184_EXU (
 
     input                               clk,
     input                               rstn,
+    input                               Dvalid,
+    input                               Mready,
 
 
     /*
@@ -50,6 +52,9 @@ module ysyx_23060184_EXU (
 
     /* --------------------------------------------- */
 
+    output                              Evalid,
+    output                              Eready,
+
     /*
         ALU Output Signals Begin
     */
@@ -83,10 +88,16 @@ module ysyx_23060184_EXU (
     );   
 
     ysyx_23060184_ALU ALU (
+        .clk(clk),
+        .rstn(rstn),
+        .Dvalid(Dvalid),
+        .Mready(Mready),
         .SrcA(SrcA),
         .SrcB(SrcB),
         .ALUOp(ALUOp),
         .Zero(Zero),
+        .Evalid(Evalid),
+        .Eready(Eready),
         .ALUResult(ALUResult)
     );
 

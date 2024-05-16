@@ -4,11 +4,11 @@ module ysyx_23060184_DataMem (
     input [`DATA_WIDTH - 1:0]           raddr,
 
     // Unit Handshake signals
-    input                               Pready,
+    input                               Wready,
     input                               Evalid,
     input [`NUM_ARB_MASTERS - 1:0]      grant,
-    output reg                          Wready,
-    output reg                          Wvalid,
+    output reg                          Mready,
+    output reg                          Mvalid,
 
 
     /* 
@@ -110,18 +110,18 @@ module ysyx_23060184_DataMem (
 
     always @(posedge clk) begin
         if (!resetn) begin
-            Wready <= 1;
+            Mready <= 1;
         end
     end
 
     always @(posedge clk) begin
-        if (Evalid && Wready) begin
-            Wready <= 0;
+        if (Evalid && Mready) begin
+            Mready <= 0;
             arvalid <= 1;
             awvalid <= 1;
             if (~MemRead && ~MemWrite) begin
-                Wvalid <= 1;
-                Wready <= 1;
+                Mvalid <= 1;
+                Mready <= 1;
             end else begin
                 Drequst <= 1;
             end
@@ -138,8 +138,8 @@ module ysyx_23060184_DataMem (
                 if (s_rvalid && rready) begin
                     arvalid <= 0;
                     rready <= 0;
-                    Wvalid <= 1;
-                    Wready <= 1;
+                    Mvalid <= 1;
+                    Mready <= 0;
                     Drequst <= 0;
                 end
             end
@@ -153,8 +153,8 @@ module ysyx_23060184_DataMem (
                     if (s_bvalid && bready) begin
                         bready <= 0;
                     end
-                    Wvalid <= 1;
-                    Wready <= 1;
+                    Mvalid <= 1;
+                    Mready <= 0;
                     Drequst <= 0;
                 end
             end
@@ -174,8 +174,8 @@ module ysyx_23060184_DataMem (
                 if (u_rvalid && rready) begin
                     arvalid <= 0;
                     rready <= 0;
-                    Wvalid <= 1;
-                    Wready <= 1;
+                    Mvalid <= 1;
+                    Mready <= 0;
                     Drequst <= 0;
                 end
             end
@@ -189,8 +189,8 @@ module ysyx_23060184_DataMem (
                     if (u_bvalid && bready) begin
                         bready <= 0;
                     end
-                    Wvalid <= 1;
-                    Wready <= 1;
+                    Mvalid <= 1;
+                    Mready <= 0;
                     Drequst <= 0;
                 end
             end
@@ -201,8 +201,9 @@ module ysyx_23060184_DataMem (
     */
 
     always @(posedge clk) begin
-        if (Wvalid && Pready) begin
-            Wvalid <= 0;
+        if (Mvalid && Wready) begin
+            Mvalid <= 0;
+            Mready <= 1;
         end
     end
 

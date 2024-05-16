@@ -33,7 +33,7 @@ module ysyx_23060184_IFU (
         InstMem Input Signals Begin
     */
 
-    input                               Eready,
+    input                               Dready,
     input [`NUM_ARB_MASTERS - 1:0]      grant,
     input                               aready,
     input [`DATA_WIDTH - 1:0]           rdata,
@@ -70,16 +70,17 @@ module ysyx_23060184_IFU (
     output                              awready,
     output [`DATA_WIDTH - 1:0]          inst,
     output                              Ivalid,
-    output                              Irequst
+    output                              Irequst,
 
     /*
         InstMem Output Signals End
     */
+
+    output [`DATA_WIDTH - 1:0]          PCPlus4
 );
 
     wire [`DATA_WIDTH - 1:0]            NPC;
     wire                                Pvalid;
-    wire [`DATA_WIDTH - 1:0]            PCPlus4;
     wire                                Iready;
 
 
@@ -125,7 +126,7 @@ module ysyx_23060184_IFU (
       .bvalid(bvalid),
       .awready(awready),
       .Pvalid(Pvalid),
-      .Eready(Eready),
+      .Dready(Dready),
       .Ivalid(Ivalid),
       .Iready(Iready),
       .Irequst(Irequst),

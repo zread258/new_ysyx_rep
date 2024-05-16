@@ -1,13 +1,13 @@
 module ysyx_23060184_Mux_Result_Src (
     input [`RESULT_SRC_LENGTH - 1:0]    ResultSrc,
-    input [`DATA_WIDTH - 1:0]           PC,
+    input [`DATA_WIDTH - 1:0]           PCPlus4,
     input [`DATA_WIDTH - 1:0]           ALUResult,
     input [`DATA_WIDTH - 1:0]           ReadData,
     input [`DATA_WIDTH - 1:0]           CsrRead,
     output reg [`DATA_WIDTH - 1:0]      Result
 );
     MuxKey #(4, `RESULT_SRC_LENGTH, `DATA_WIDTH) i0 (Result, ResultSrc, {
-        `RESULT_SRC_PCPlus4,  PC + 4,
+        `RESULT_SRC_PCPlus4,  PCPlus4,
         `RESULT_SRC_ALU,      ALUResult,
         `RESULT_SRC_MEM,      ReadData,
         `RESULT_SRC_CSR,      CsrRead

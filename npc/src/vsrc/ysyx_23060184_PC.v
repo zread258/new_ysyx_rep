@@ -1,12 +1,12 @@
-module ysyx_23060184_PC #(DATA_WIDTH = 32) (
+module ysyx_23060184_PC (
     input                           clk,
     input                           rstn,
     input                           Wvalid,
     input                           Iready,
     output reg                      Pvalid,
     output reg                      Pready,
-    input [DATA_WIDTH - 1:0]        NPC,
-    output reg [DATA_WIDTH - 1:0]   PC
+    input [`DATA_WIDTH - 1:0]       NPC,
+    output reg [`DATA_WIDTH - 1:0]  PC
 );
 
     always @(posedge clk) begin
