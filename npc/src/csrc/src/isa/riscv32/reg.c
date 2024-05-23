@@ -20,6 +20,10 @@ const char *regs[] = {
 
 #define NR_GPR MUXDEF(CONFIG_RVE, 16, 32)
 
+bool instr_valid() {
+  return dut->rootp->ysyx_23060184_SGC__DOT__Ivalid;
+}
+
 void update_cpu_reg() {
   for (int i = 0; i < NR_GPR; i++) {
     cpu.gpr[i] = dut->rootp->ysyx_23060184_SGC__DOT__IDU__DOT__RegFile__DOT__rf[i];

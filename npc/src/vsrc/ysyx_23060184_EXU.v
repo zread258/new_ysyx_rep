@@ -50,6 +50,19 @@ module ysyx_23060184_EXU (
         PCSRc Input Signals End
     */
 
+    /*
+        Forwarding Input Signals Begin
+    */
+
+    input [`FWDA_MUX_LENGTH - 1:0]      ForwardAE,
+    input [`FWDB_MUX_LENGTH - 1:0]      ForwardBE,
+    input [`DATA_WIDTH - 1:0]           ResultW,
+    input [`DATA_WIDTH - 1:0]           ALUResultM,
+
+    /*
+        Forwarding Input Signals End
+    */
+
     /* --------------------------------------------- */
 
     output                              Evalid,
@@ -73,20 +86,37 @@ module ysyx_23060184_EXU (
     wire Zero;
 
     wire [`DATA_WIDTH - 1:0] SrcA, SrcB;
+    wire [`DATA_WIDTH - 1:0] FwdRD1E, FwdRD2E;
 
     assign WriteData = RD2;
+
+    ysyx_23060184_Mux_RD1E Mux_RD1E (
+        .ForwardAE(ForwardAE),
+        .RD1E(RD1),
+        .ResultW(ResultW),
+        .ALUResultM(ALUResultM),
+        .FwdRD1E(FwdRD1E)
+    );
+
+    ysyx_23060184_Mux_RD2E Mux_RD2E (
+        .ForwardBE(ForwardBE),
+        .RD2E(RD2),
+        .ResultW(ResultW),
+        .ALUResultM(ALUResultM),
+        .FwdRD2E(FwdRD2E)
+    );
 
     ysyx_23060184_Mux_ALUSrcA Mux_ALUSrcA (
         .ALUSrcA(ALUSrcA),
         .PC(PC),
-        .RD1(RD1),
+        .RD1(FwdRD1E),
         .SrcA(SrcA)
     );
 
     ysyx_23060184_Mux_ALUSrcB Mux_ALUSrcB (
         .ALUSrcB(ALUSrcB),
         .ImmExt(ImmExt),
-        .RD2(RD2),
+        .RD2(FwdRD2E),
         .CsrRead(CsrRead),
         .SrcB(SrcB)
     );   

@@ -2,6 +2,8 @@ module ysyx_23060184_IFU (
 
     input                               clk,
     input                               rstn,
+    // input                               Stall,
+    input                               Branch,
 
 
     /*
@@ -22,7 +24,6 @@ module ysyx_23060184_IFU (
         PC Input Signals Begin
     */
 
-    input                               Wvalid,
 
     /*
         PC Input Signals End
@@ -70,7 +71,7 @@ module ysyx_23060184_IFU (
     output                              awready,
     output [`DATA_WIDTH - 1:0]          inst,
     output                              Ivalid,
-    output                              Irequst,
+    output                              Irequest,
 
     /*
         InstMem Output Signals End
@@ -96,8 +97,10 @@ module ysyx_23060184_IFU (
     ysyx_23060184_PC PC (
       .clk(clk),
       .rstn(rstn),
-      .Wvalid(Wvalid),
+      .Branch(Branch),
+    //   .Stall(Stall),
       .Pvalid(Pvalid),
+      .Ivalid(Ivalid),
       .Iready(Iready),
       .Pready(Pready),
       .NPC(NPC),
@@ -129,7 +132,7 @@ module ysyx_23060184_IFU (
       .Dready(Dready),
       .Ivalid(Ivalid),
       .Iready(Iready),
-      .Irequst(Irequst),
+      .Irequest(Irequest),
       .RD(inst)
    );
 

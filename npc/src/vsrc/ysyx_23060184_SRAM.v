@@ -1,5 +1,6 @@
 module ysyx_23060184_SRAM (
     input                               clk,
+    input                               rstn,
 
     /*
         Arbiter signals Begin
@@ -76,21 +77,35 @@ module ysyx_23060184_SRAM (
     import "DPI-C" function void pmem_write(
     input int waddr, input int wdata, input byte wmask);
 
+
+    always @ (posedge clk) begin
+        if (~rstn) begin
+            aready <= 1;
+            rvalid <= 0;
+            awready <= 1;
+            wready <= 0;
+            bvalid <= 0;
+        end
+    end
+
     /* 
         InstMem AXI4 Transaction Begin
     */
     always @(posedge clk) begin
         if (valid && InstMem) begin
-            aready <= 1;
             if (i_arvalid && aready) begin
+                aready <= 0;
                 rvalid <= 1;
-                if (rvalid && i_rready) begin
-                    rdata <= pmem_read(i_araddr);
-                    rresp <= 0;
-                    aready <= 0;
-                    rvalid <= 0;
-                end
             end
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (InstMem && rvalid && i_rready) begin
+            rdata <= pmem_read(i_araddr);
+            rresp <= 0;
+            aready <= 1;
+            rvalid <= 0;
         end
     end
     /* 
@@ -102,29 +117,40 @@ module ysyx_23060184_SRAM (
     */
     always @(posedge clk) begin
         if (valid && DataMem) begin
-            aready <= 1;
             if (d_arvalid && aready) begin
+                aready <= 0;
                 rvalid <= 1;
-                if (rvalid && d_rready) begin
-                    rdata <= pmem_read(d_araddr);
-                    rresp <= 0;
-                    aready <= 0;
-                    rvalid <= 0;
-                end
             end
-            awready <= 1;
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (DataMem && rvalid && d_rready) begin
+            rdata <= pmem_read(d_araddr);
+            rresp <= 0;
+            aready <= 1;
+            rvalid <= 0;
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (valid && DataMem) begin
             if (d_awvalid && awready) begin
+                awready <= 0;
                 wready <= 1;
-                if (d_wvalid && wready) begin
-                    pmem_write(d_awaddr, d_wdata, d_wstrb);
-                    awready <= 0;
-                    wready <= 0;
-                    bvalid <= 1;
-                    if (bvalid && d_bready) begin
-                        bresp <= 0;
-                        bvalid <= 0;
-                    end
-                end
+            end
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (DataMem && d_wvalid && wready) begin
+            pmem_write(d_awaddr, d_wdata, d_wstrb);
+            awready <= 1;
+            wready <= 0;
+            bvalid <= 1;
+            if (bvalid && d_bready) begin
+                bresp <= 0;
+                bvalid <= 0;
             end
         end
     end

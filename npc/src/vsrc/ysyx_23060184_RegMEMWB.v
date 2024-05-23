@@ -60,7 +60,16 @@ module ysyx_23060184_RegMEMWB(
             CsrReadW <= CsrReadM;
             ALUResultW <= ALUResultM;
             RdW <= RdM;
-        end
+        end 
+        // else begin
+        //     RegWriteW <= 0;
+        //     ResultSrcW <= 0;
+        //     PCPlus4W <= 0;
+        //     ReadDataW <= 0;
+        //     CsrReadW <= 0;
+        //     ALUResultW <= 0;
+        //     RdW <= 0;
+        // end
     end
     
 endmodule //ysyx_23060184_RegMEMWB

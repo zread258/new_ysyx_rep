@@ -1,8 +1,9 @@
 module ysyx_23060184_PC (
     input                           clk,
     input                           rstn,
-    input                           Wvalid,
+    input                           Branch,
     input                           Iready,
+    input                           Ivalid,
     output reg                      Pvalid,
     output reg                      Pready,
     input [`DATA_WIDTH - 1:0]       NPC,
@@ -18,8 +19,10 @@ module ysyx_23060184_PC (
     end
 
     always @(posedge clk) begin
-        if (Wvalid && Pready) begin
-            Pready <= 0;
+        if (
+            // (Pready && 
+        Ivalid || Branch) begin // StallF
+            // Pready <= 0;
             PC <= NPC;
             Pvalid <= 1;
         end
@@ -28,7 +31,7 @@ module ysyx_23060184_PC (
     always @(posedge clk) begin
         if (Pvalid && Iready) begin
             Pvalid <= 0;
-            Pready <= 1;
+            // Pready <= 1;
         end
     end
 

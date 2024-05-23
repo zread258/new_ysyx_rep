@@ -5,6 +5,8 @@
 
 // CPU Data Width
 `define DATA_WIDTH      32
+// Register Addr Width
+`define RADD_WIDTH      5
 // Instruction Memory Capacity
 `define IM_LENGTH       1023
 // Data Memory Capacity
@@ -206,3 +208,17 @@
 `define INSTMEM_GRANT    2'b01
 `define DATAMEM_GRANT    2'b10
 `define UART_GRANT       2'b11
+
+// Forwarding Multiplexers Control Signals
+`define FWDA_MUX_LENGTH      2
+`define FWDA_MUX_DEFAULT     2'b00
+`define FWDA_MUX_RD1E        2'b01
+`define FWDA_MUX_RESULTW     2'b10
+`define FWDA_MUX_ALURESULTM  2'b11
+
+`define FWDB_MUX_LENGTH      2
+`define FWDB_MUX_DEFAULT     2'b00
+`define FWDB_MUX_RD2E        2'b01
+`define FWDB_MUX_RESULTW     2'b10
+`define FWDB_MUX_ALURESULTM  2'b11
+

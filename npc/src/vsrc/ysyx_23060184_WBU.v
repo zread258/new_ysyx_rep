@@ -3,7 +3,6 @@ module ysyx_23060184_WBU (
     input                               clk,
     input                               rstn,
     input                               Mvalid,
-    input                               Pready,  
 
 
     /*
@@ -43,7 +42,7 @@ module ysyx_23060184_WBU (
     end
 
     always @ (posedge clk) begin
-        if (Wvalid && Pready) begin
+        if (Wvalid) begin
             Wready <= 1;
             Wvalid <= 0;
         end

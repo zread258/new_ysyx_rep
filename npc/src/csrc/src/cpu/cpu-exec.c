@@ -1,12 +1,12 @@
 /***************************************************************************************
-* Copyright (c) 2023-2024 modified by Ruidong Zhang
-* Thanks to Zihao Yu from Nanjing University 
-* and YSYX-project group
+ * Copyright (c) 2023-2024 modified by Ruidong Zhang
+ * Thanks to Zihao Yu from Nanjing University
+ * and YSYX-project group
  ***************************************************************************************/
 
-#include <isa.h>
 #include <cpu/cpu.h>
 #include <cpu/difftest.h>
+#include <isa.h>
 #include <locale.h>
 
 /* The assembly code of instructions executed is only output to the screen
@@ -19,11 +19,12 @@
 void difftest_step(vaddr_t pc, vaddr_t npc);
 void device_update();
 bool check_wp();
+bool instr_valid();
 void sdb_mainloop();
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
-static uint64_t g_timer = 0; // unit: us
+static uint64_t g_timer = 0;  // unit: us
 static bool g_print_step = false;
 word_t old_inst = 0;
 bool start = false;
@@ -33,14 +34,14 @@ word_t same_inst_clock = 0;
 bool check_wp();
 
 static void trace_and_difftest() {
-// #ifdef CONFIG_ITRACE_COND
-//   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
-// #endif
-//   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+  // #ifdef CONFIG_ITRACE_COND
+  //   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
+  // #endif
+  //   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(cpu.pc, cpu.pc));
 #ifdef CONFIG_WATCHPOINT
-  if (check_wp()) { 
-    npc_state.state = NPC_STOP; 
+  if (check_wp()) {
+    npc_state.state = NPC_STOP;
   }
 #endif
 }
@@ -49,26 +50,37 @@ static void exec_once() {
   while (old_inst == get_inst()) {
     step_and_dump_wave();
     cpu.pc = get_curpc();
-    same_inst_clock ++;
+    same_inst_clock++;
     if (same_inst_clock >= MAX_CLOCKS_PER_INST) {
       sim_break();
-      npc_state.state = NPC_END;
+      npc_state.state = NPC_ABORT;
+      return ;
     }
-    // Assert(!abort, "The instruction is running for too long, maybe it is a bug.");
-  } // multi-cycle instruction support
-  if (cpu.pc != 0)  start = true; // start to update cpu reg
+    if (!instr_valid()) {
+      old_inst = get_inst();
+      continue;
+    }
+    // Assert(!abort, "The instruction is running for too long, maybe it is a
+    // bug.");
+  }  // multi-cycle instruction support
+  step_and_dump_wave();
+  same_inst_clock = 0;
+  if (cpu.pc != 0) start = true;  // start to update cpu reg
   old_inst = get_inst();
-  if (start)  update_cpu_reg();
+  if (start) update_cpu_reg();
 #ifdef CONFIG_ITRACE
-  char *log = (char*)malloc(1024);
+  char *log = (char *)malloc(1024);
   char *p = log;
-  p += snprintf(p, 16, "0x%08x" ":", cpu.pc);
+  p += snprintf(p, 16,
+                "0x%08x"
+                ":",
+                cpu.pc);
   int ilen = 4;
   int i;
   word_t cur_inst = get_inst();
   uint8_t *inst = (uint8_t *)(&cur_inst);
   if (cur_inst == 0x00100073) npc_state.state = NPC_END;
-  for (i = ilen - 1; i >= 0; i --) {
+  for (i = ilen - 1; i >= 0; i--) {
     p += snprintf(p, 4, " %02x", inst[i]);
   }
   int ilen_max = MUXDEF(CONFIG_ISA_x86, 8, 4);
@@ -80,14 +92,13 @@ static void exec_once() {
 
 #ifndef CONFIG_ISA_loongarch32r
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-  disassemble(p, 100,
-      cpu.pc, inst, ilen);
-  
+  disassemble(p, 100, cpu.pc, inst, ilen);
+
   printf("%s\n", log);
 #else
-  p[0] = '\0'; // the upstream llvm does not support loongarch32r
+  p[0] = '\0';  // the upstream llvm does not support loongarch32r
 #endif
-  
+
 #else
   word_t cur_inst = get_inst();
   if (cur_inst == 0x00100073) npc_state.state = NPC_END;
@@ -95,7 +106,7 @@ static void exec_once() {
 }
 
 static void execute(uint64_t n) {
-  for (;n > 0; n --) {
+  for (; n > 0; n--) {
     exec_once();
     if (start) trace_and_difftest();
     if (npc_state.state != NPC_RUNNING) break;
@@ -105,10 +116,14 @@ static void execute(uint64_t n) {
 
 void cpu_exec(uint64_t n) {
   switch (npc_state.state) {
-    case NPC_END: case NPC_ABORT:
-      printf("Program execution has ended. To restart the program, exit NPC and run again.\n");
+    case NPC_END:
+    case NPC_ABORT:
+      printf(
+          "Program execution has ended. To restart the program, exit NPC and "
+          "run again.\n");
       return;
-    default: npc_state.state = NPC_RUNNING;
+    default:
+      npc_state.state = NPC_RUNNING;
   }
 
   execute(n);
@@ -116,17 +131,25 @@ void cpu_exec(uint64_t n) {
   // trace_and_difftest();
 
   switch (npc_state.state) {
-    case NPC_RUNNING: npc_state.state = NPC_STOP; break;
+    case NPC_RUNNING:
+      npc_state.state = NPC_STOP;
+      break;
 
-    case NPC_END: case NPC_ABORT:
+    case NPC_END:
+    case NPC_ABORT:
       Log("npc: %s at pc = " FMT_WORD,
-          (npc_state.state == NPC_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :
-           (npc_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
-            ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
-          cpu.pc); break;
+          (npc_state.state == NPC_ABORT
+               ? ANSI_FMT("ABORT", ANSI_FG_RED)
+               : (npc_state.halt_ret == 0
+                      ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN)
+                      : ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
+          cpu.pc);
+      break;
       // fall through
-    // case NPC_QUIT: statistic(); break;
+      // case NPC_QUIT: statistic(); break;
 
-    case NPC_STOP: Log("Watchpoint Activated!"); break;
+    case NPC_STOP:
+      Log("Watchpoint Activated!");
+      break;
   }
 }

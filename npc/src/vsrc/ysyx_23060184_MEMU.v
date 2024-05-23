@@ -94,7 +94,7 @@ module ysyx_23060184_MEMU (
 
     // Output signals
     output reg [`DATA_WIDTH - 1:0]      ReadData,
-    output reg                          Drequst
+    output reg                          Drequest
 );
 
     ysyx_23060184_DataMem DataMem (
@@ -152,7 +152,7 @@ module ysyx_23060184_MEMU (
       .wmask(Wmask),
       .data(WriteData),
       .ropcode(Ropcode),
-      .Drequst(Drequst),
+      .Drequest(Drequest),
       .result(ReadData)
    );
 

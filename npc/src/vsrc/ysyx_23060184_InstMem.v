@@ -5,6 +5,7 @@ module ysyx_23060184_InstMem(
     // Input signals
     input [`DATA_WIDTH - 1:0]           A,
     input [`NUM_ARB_MASTERS - 1:0]      grant,
+    // input                               Stall,
 
 
     /* 
@@ -39,11 +40,12 @@ module ysyx_23060184_InstMem(
     output reg                          Iready,
 
     // Output signals
-    output reg                          Irequst,
+    output reg                          Irequest,
     output reg  [`DATA_WIDTH - 1:0]     RD
 );
 
     assign araddr = A;
+    assign RD = rdata;
     wire Igrant = (grant == `INSTMEM_GRANT) ? 1 : 0;
 
     always @(posedge clk) begin
@@ -53,7 +55,7 @@ module ysyx_23060184_InstMem(
             rready <= 1;
         end else if (Pvalid && Iready) begin
             Iready <= 0; // Inst Fetch start
-            Irequst <= 1; // Inst Fetch request
+            Irequest <= 1; // Inst Fetch request
             arvalid <= 1; // Addr Read request
         end 
     end
@@ -65,21 +67,18 @@ module ysyx_23060184_InstMem(
     end
 
     always @(posedge clk) begin
-        if (arvalid && aready) begin // Addr Handshake
+        if (Igrant && arvalid && aready) begin // Addr Handshake
             rready <= 1; // Read Ready
-            if (rvalid && rready) begin // Read Handshake
-                arvalid <= 0;
-                rready <= 0;
-                Ivalid <= 1;
-                Iready <= 1;
-                Irequst <= 0;
-            end
         end
     end
 
-    always @(rdata) begin // To be improved!
-        if (Igrant) begin
-            RD <= rdata;
+    always @ (posedge clk) begin
+        if (Igrant && rvalid && rready) begin // Read Handshake
+            arvalid <= 0;
+            rready <= 0;
+            Ivalid <= 1;
+            Iready <= 1;
+            Irequest <= 0;
         end
     end
 

@@ -11,10 +11,10 @@ module ysyx_23060184_IDU (
     */
 
     input [`DATA_WIDTH - 1:0]           Result, // Change to ResultW
+    input [`RADD_WIDTH - 1:0]           RdW,
     input                               RegWriteW, // TODO: Add when change to pipeline
     input                               Ivalid,
     input                               Wvalid,
-    input                               Pready,
     input                               Eready,
 
     /*
@@ -134,7 +134,7 @@ module ysyx_23060184_IDU (
       .clk(clk),
       .resetn(rstn),
       .wdata(Result),
-      .waddr(inst[11:7]),
+      .waddr(RdW),
       .wen(RegWriteW),
       .raddr1(inst[19:15]),
       .raddr2(inst[24:20]),
@@ -142,7 +142,6 @@ module ysyx_23060184_IDU (
       .rdata2(RD2),
       .Ivalid(Ivalid),
       .Wvalid(Wvalid),
-      .Pready(Pready),
       .Eready(Eready),
       .Dvalid(Dvalid),
       .Dready(Dready),
@@ -161,11 +160,10 @@ module ysyx_23060184_IDU (
       .mret(Mret),
       .pc(PC),
       .wdata(ALUResult),
-      .waddr(inst[29:20]), // TODO: Expand to 12 bits addr
+      .waddr(inst[29:20]), // TODO: Expand to 12 bits addr ToDo: Change it to CsrWaddr
       .wen(CsrWriteW),
       .raddr(inst[29:20]),
       .Wvalid(Wvalid),
-      .Pready(Pready),
       .rdata(CsrRead)
    );
 

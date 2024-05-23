@@ -13,6 +13,7 @@ VERILATOR_INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/vsrc/include
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
+VCD = $(BUILD_DIR)/waveform.vcd 
 
 $(shell mkdir -p $(BUILD_DIR))
 
@@ -68,8 +69,8 @@ run: $(BIN)
 gdb: $(BIN)
 	@gdb --args $^ $(NPCFLAGS) $(ARGS) $(IMG) 
 
-waves: $(BIN)
-	gtkwave $(BUILD_DIR)/waveform.vcd ./config.gtkw
+waves: $(VCD)
+	gtkwave $(VCD) ./config.gtkw
 
 clean:
 	rm -rf $(BUILD_DIR)

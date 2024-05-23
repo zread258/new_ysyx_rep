@@ -56,7 +56,21 @@ module ysyx_23060184_RegEXMEM(
             RdM <= RdE;
             CsrReadM <= CsrReadE;
             ALUResultM <= ALUResultE;
-        end
+        end 
+        // else begin
+        //     RegWriteM <= 0;
+        //     MemReadM <= 0;
+        //     MemWriteM <= 0;
+        //     CsrWriteM <= 0;
+        //     WmaskM <= 0;
+        //     RopcodeM <= 0;
+        //     ResultSrcM <= 0;
+        //     WriteDataM <= 0;
+        //     PCPlus4M <= 0;
+        //     RdM <= 0;
+        //     CsrReadM <= 0;
+        //     ALUResultM <= 0;
+        // end
     end
     
 endmodule //ysyx_23060184_RegEXMEM

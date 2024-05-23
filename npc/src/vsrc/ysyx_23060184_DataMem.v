@@ -90,7 +90,7 @@ module ysyx_23060184_DataMem (
 
 
     // Output signals
-    output reg                          Drequst,
+    output reg                          Drequest,
     output reg [`DATA_WIDTH - 1:0]      result
 );
 
@@ -111,19 +111,24 @@ module ysyx_23060184_DataMem (
     always @(posedge clk) begin
         if (!resetn) begin
             Mready <= 1;
+            arvalid <= 0;
+            awvalid <= 0;
         end
     end
 
     always @(posedge clk) begin
         if (Evalid && Mready) begin
             Mready <= 0;
-            arvalid <= 1;
-            awvalid <= 1;
             if (~MemRead && ~MemWrite) begin
                 Mvalid <= 1;
                 Mready <= 1;
+                Drequest <= 0;
             end else begin
-                Drequst <= 1;
+                if (MemRead)
+                    arvalid <= 1;
+                else if (MemWrite)
+                    awvalid <= 1;
+                Drequest <= 1;
             end
         end
     end
@@ -135,29 +140,39 @@ module ysyx_23060184_DataMem (
         if (MemRead && SRAM && Dgrant) begin
             if (arvalid && s_aready) begin
                 rready <= 1;
-                if (s_rvalid && rready) begin
-                    arvalid <= 0;
-                    rready <= 0;
-                    Mvalid <= 1;
-                    Mready <= 0;
-                    Drequst <= 0;
-                end
             end
-        end else if (MemWrite && SRAM && Dgrant) begin
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (s_rvalid && rready) begin
+            arvalid <= 0;
+            rready <= 0;
+            Mvalid <= 1;
+            Mready <= 0;
+            Drequest <= 0;
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (MemWrite && SRAM && Dgrant) begin
             if (awvalid && s_awready) begin
                 wvalid <= 1;
-                if (wvalid && s_wready) begin
-                    awvalid <= 0;
-                    wvalid <= 0;
-                    bready <= 1;
-                    if (s_bvalid && bready) begin
-                        bready <= 0;
-                    end
-                    Mvalid <= 1;
-                    Mready <= 0;
-                    Drequst <= 0;
-                end
             end
+        end
+    end
+    
+    always @ (posedge clk) begin
+        if (wvalid && s_wready) begin
+            awvalid <= 0;
+            wvalid <= 0;
+            bready <= 1;
+            if (s_bvalid && bready) begin
+                bready <= 0;
+            end
+            Mvalid <= 1;
+            Mready <= 0;
+            Drequest <= 0;
         end
     end
     /*
@@ -176,7 +191,7 @@ module ysyx_23060184_DataMem (
                     rready <= 0;
                     Mvalid <= 1;
                     Mready <= 0;
-                    Drequst <= 0;
+                    Drequest <= 0;
                 end
             end
         end else if (MemWrite && UART && Dgrant) begin
@@ -191,7 +206,7 @@ module ysyx_23060184_DataMem (
                     end
                     Mvalid <= 1;
                     Mready <= 0;
-                    Drequst <= 0;
+                    Drequest <= 0;
                 end
             end
         end

@@ -60,3 +60,33 @@ module ysyx_23060184_Mux_PC_Src (
     });
     
 endmodule
+
+module ysyx_23060184_Mux_RD1E (
+    input [`FWDA_MUX_LENGTH - 1:0]   ForwardAE,
+    input [`DATA_WIDTH - 1:0]        RD1E,
+    input [`DATA_WIDTH - 1:0]        ResultW,
+    input [`DATA_WIDTH - 1:0]        ALUResultM,
+    output reg [`DATA_WIDTH - 1:0]   FwdRD1E
+);
+    MuxKey #(3, `FWDA_MUX_LENGTH, `DATA_WIDTH) i0 (FwdRD1E, ForwardAE, {
+        `FWDA_MUX_RD1E,         RD1E,
+        `FWDA_MUX_RESULTW,      ResultW,
+        `FWDA_MUX_ALURESULTM,   ALUResultM
+    });
+    
+endmodule
+
+module ysyx_23060184_Mux_RD2E (
+    input [`FWDB_MUX_LENGTH - 1:0]   ForwardBE,
+    input [`DATA_WIDTH - 1:0]        RD2E,
+    input [`DATA_WIDTH - 1:0]        ResultW,
+    input [`DATA_WIDTH - 1:0]        ALUResultM,
+    output reg [`DATA_WIDTH - 1:0]   FwdRD2E
+);
+    MuxKey #(3, `FWDB_MUX_LENGTH, `DATA_WIDTH) i0 (FwdRD2E, ForwardBE, {
+        `FWDB_MUX_RD2E,         RD2E,
+        `FWDB_MUX_RESULTW,      ResultW,
+        `FWDB_MUX_ALURESULTM,   ALUResultM
+    });
+    
+endmodule

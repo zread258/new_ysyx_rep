@@ -114,6 +114,33 @@ module ysyx_23060184_RegIDEXE (
             Rs1E <= Rs1D;
             Rs2E <= Rs2D;
             RdE <= RdD;
+        end 
+        else begin
+            // RegWriteE <= 1'b0;
+            // MemReadE <= 1'b0;
+            // MemWriteE <= 1'b0;
+            // CsrWriteE <= 1'b0;
+            JalE <= 1'b0;
+            JalrE <= 1'b0;
+            BneE <= 1'b0;
+            BeqE <= 1'b0;
+            BltsuE <= 1'b0;
+            BgesuE <= 1'b0;
+            EcallE <= 1'b0;
+            MretE <= 1'b0;
+            // WmaskE <= 0;
+            // RopcodeE <= 0;
+            // ResultSrcE <= 0;
+            // ALUOpE <= 0;
+            // RD1E <= 0;
+            // RD2E <= 0;
+            // PCE <= 0;
+            // ImmExtE <= 0;
+            // PCPlus4E <= 0;
+            // CsrReadE <= 0;
+            // Rs1E <= 0;
+            // Rs2E <= 0;
+            // RdE <= 0;
         end
     end
     
