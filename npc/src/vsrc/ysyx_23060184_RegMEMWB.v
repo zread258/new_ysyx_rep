@@ -19,6 +19,7 @@ module ysyx_23060184_RegMEMWB(
     input           [`DATA_WIDTH - 1:0]         ReadDataM,
     input           [`DATA_WIDTH - 1:0]         CsrReadM,
     input           [`REG_LENGTH - 1:0]         RdM,
+    input           [`CSR_LENGTH - 1:0]         CsrAddrM,
 
     /* 
         MEM Stage Signals input End
@@ -36,7 +37,8 @@ module ysyx_23060184_RegMEMWB(
     output   reg    [`DATA_WIDTH - 1:0]         PCPlus4W,
     output   reg    [`DATA_WIDTH - 1:0]         ReadDataW,
     output   reg    [`DATA_WIDTH - 1:0]         CsrReadW,
-    output   reg    [`REG_LENGTH - 1:0]         RdW
+    output   reg    [`REG_LENGTH - 1:0]         RdW,
+    output   reg    [`CSR_LENGTH - 1:0]         CsrAddrW
 
     /* 
         WB Stage Signals output End
@@ -52,6 +54,7 @@ module ysyx_23060184_RegMEMWB(
             CsrReadW <= 0;
             ALUResultW <= 0;
             RdW <= 0;
+            CsrAddrW <= 0;
         end else if (Mvalid && Wready) begin
             RegWriteW <= RegWriteM;
             ResultSrcW <= ResultSrcM;
@@ -60,6 +63,7 @@ module ysyx_23060184_RegMEMWB(
             CsrReadW <= CsrReadM;
             ALUResultW <= ALUResultM;
             RdW <= RdM;
+            CsrAddrW <= CsrAddrM;
         end 
         // else begin
         //     RegWriteW <= 0;

@@ -26,6 +26,7 @@ module ysyx_23060184_IDU (
     */
 
     input [`DATA_WIDTH - 1:0]           ALUResult, // Change to ALUResultW
+    input [`CSR_LENGTH - 1:0]           CsrAddrW,
     input                               CsrWriteW, // TODO: Add when change to pipeline
     input [`DATA_WIDTH - 1:0]           PCPlus4,
 
@@ -89,6 +90,7 @@ module ysyx_23060184_IDU (
     /*
         CSReg Output Signals Begin
     */
+    output [`CSR_LENGTH - 1:0]          CsrAddrD,
     output [`DATA_WIDTH - 1:0]          CsrRead
     /*
         CSReg Output Signals End
@@ -98,6 +100,8 @@ module ysyx_23060184_IDU (
     wire [`EXT_OP_LENGTH - 1:0]         ExtOp;
 
     wire [`DATA_WIDTH - 1:0]            PC = PCPlus4 - 4;
+
+    assign CsrAddrD = inst[29:20];
 
     ysyx_23060184_Decode Deocde (
       .clk(clk),
@@ -160,9 +164,9 @@ module ysyx_23060184_IDU (
       .mret(Mret),
       .pc(PC),
       .wdata(ALUResult),
-      .waddr(inst[29:20]), // TODO: Expand to 12 bits addr ToDo: Change it to CsrWaddr
+      .waddr(CsrAddrW), // TODO: Expand to 12 bits(Currently 10 bits) addr ToDo: Change it to CsrAddrW 
       .wen(CsrWriteW),
-      .raddr(inst[29:20]),
+      .raddr(CsrAddrW),
       .Wvalid(Wvalid),
       .rdata(CsrRead)
    );

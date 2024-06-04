@@ -30,6 +30,7 @@ module ysyx_23060184_RegIDEXE (
     input           [`REG_LENGTH - 1:0]         Rs1D,
     input           [`REG_LENGTH - 1:0]         Rs2D,
     input           [`REG_LENGTH - 1:0]         RdD,
+    input           [`CSR_LENGTH - 1:0]         CsrAddrD,
     output reg                                  RegWriteE,
     output reg                                  MemReadE,
     output reg                                  MemWriteE,
@@ -56,7 +57,8 @@ module ysyx_23060184_RegIDEXE (
     output reg      [`DATA_WIDTH - 1:0]         CsrReadE,
     output reg      [`REG_LENGTH - 1:0]         Rs1E,
     output reg      [`REG_LENGTH - 1:0]         Rs2E,
-    output reg      [`REG_LENGTH - 1:0]         RdE
+    output reg      [`REG_LENGTH - 1:0]         RdE,
+    output reg      [`CSR_LENGTH - 1:0]         CsrAddrE
 );
 
     always @(posedge clk) begin
@@ -86,6 +88,7 @@ module ysyx_23060184_RegIDEXE (
             Rs1E <= 0;
             Rs2E <= 0;
             RdE <= 0;
+            CsrAddrE <= 0;
         end else if (Dvalid && Eready) begin
             RegWriteE <= RegWriteD;
             MemReadE <= MemReadD;
@@ -114,6 +117,7 @@ module ysyx_23060184_RegIDEXE (
             Rs1E <= Rs1D;
             Rs2E <= Rs2D;
             RdE <= RdD;
+            CsrAddrE <= CsrAddrD;
         end 
         else begin
             // RegWriteE <= 1'b0;

@@ -120,6 +120,7 @@ module ysyx_23060184_SGC (
     wire [  `ALU_SRCB_LENGTH - 1:0] ALUSrcBD;
     wire [    `ALU_OP_LENGTH - 1:0] ALUOpD;
     wire [`DATA_WIDTH - 1:0] ImmExtD, RD1D, RD2D, CsrReadD;
+    wire [   `CSR_LENGTH - 1:0] CsrAddrD;
 
     ysyx_23060184_IDU IDU (
         .clk(clk),
@@ -146,6 +147,8 @@ module ysyx_23060184_SGC (
         .MemWrite(MemWriteD),
         .CsrWriteD(CsrWriteD),
         .CsrWriteW(CsrWriteW),
+        .CsrAddrD(CsrAddrD),
+        .CsrAddrW(CsrAddrW),
         .Wmask(WmaskD),
         .Ropcode(RopcodeD),
         .ResultSrc(ResultSrcD),
@@ -170,6 +173,7 @@ module ysyx_23060184_SGC (
     wire [    `ALU_OP_LENGTH - 1:0] ALUOpE;
     wire [`DATA_WIDTH - 1:0] PCE, ImmExtE, PCPlus4E, RD1E, RD2E, CsrReadE;
     wire [`REG_LENGTH - 1:0] Rs1E, Rs2E, RdE;
+    wire [   `CSR_LENGTH - 1:0] CsrAddrD;
 
     ysyx_23060184_RegIDEXE RegIDEXE (
         .clk(clk),
@@ -203,6 +207,7 @@ module ysyx_23060184_SGC (
         .Rs1D(InstD[19:15]),
         .Rs2D(InstD[24:20]),
         .RdD(InstD[11:7]),
+        .CsrAddrD(CsrAddrD),
         .RegWriteE(RegWriteE),
         .MemReadE(MemReadE),
         .MemWriteE(MemWriteE),
@@ -229,7 +234,8 @@ module ysyx_23060184_SGC (
         .CsrReadE(CsrReadE),
         .Rs1E(Rs1E),
         .Rs2E(Rs2E),
-        .RdE(RdE)
+        .RdE(RdE),
+        .CsrAddrE(CsrAddrE)
     );
 
     wire [`DATA_WIDTH - 1:0] ALUResultE, PCTargetE, WriteDataE;
@@ -277,6 +283,7 @@ module ysyx_23060184_SGC (
     wire [`RESULT_SRC_LENGTH - 1:0] ResultSrcM;
     wire [`DATA_WIDTH - 1:0] PCPlus4M, CsrReadM;
     wire [`REG_LENGTH - 1:0] RdM;
+    wire [   `CSR_LENGTH - 1:0] CsrAddrE, CsrAddrM;
 
 
     ysyx_23060184_RegEXMEM RegEXMEM (
@@ -296,6 +303,7 @@ module ysyx_23060184_SGC (
         .PCPlus4E(PCPlus4E),
         .CsrReadE(CsrReadE),
         .RdE(RdE),
+        .CsrAddrE(CsrAddrE),
         .RegWriteM(RegWriteM),
         .MemReadM(MemReadM),
         .MemWriteM(MemWriteM),
@@ -307,7 +315,8 @@ module ysyx_23060184_SGC (
         .PCPlus4M(PCPlus4M),
         .CsrReadM(CsrReadM),
         .RdM(RdM),
-        .ALUResultM(ALUResultM)
+        .ALUResultM(ALUResultM),
+        .CsrAddrM(CsrAddrM)
     );
 
 
@@ -378,6 +387,7 @@ module ysyx_23060184_SGC (
     wire [`RESULT_SRC_LENGTH - 1:0] ResultSrcW;
     wire [`DATA_WIDTH - 1:0] ALUResultW, PCPlus4W, ReadDataW, CsrReadW;
     wire [`REG_LENGTH - 1:0] RdW;
+    wire [   `CSR_LENGTH - 1:0] CsrAddrW;
 
     ysyx_23060184_RegMEMWB RegMEMWB (
         .clk(clk),
@@ -392,6 +402,7 @@ module ysyx_23060184_SGC (
         .ReadDataM(ReadDataM),
         .CsrReadM(CsrReadM),
         .RdM(RdM),
+        .CsrAddrM(CsrAddrM),
         .RegWriteW(RegWriteW),
         .CsrWriteW(CsrWriteW),
         .ResultSrcW(ResultSrcW),
@@ -399,7 +410,8 @@ module ysyx_23060184_SGC (
         .PCPlus4W(PCPlus4W),
         .ReadDataW(ReadDataW),
         .CsrReadW(CsrReadW),
-        .RdW(RdW)
+        .RdW(RdW),
+        .CsrAddrW(CsrAddrW)
     );
 
     wire [`DATA_WIDTH - 1:0] ResultW;

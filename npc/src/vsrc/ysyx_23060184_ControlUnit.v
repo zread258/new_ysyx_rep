@@ -1,3 +1,5 @@
+`include "ysyx_23060184_Config.v"
+
 module ysyx_23060184_ControlUnit (
         
     /*
