@@ -1,15 +1,73 @@
 `include "ysyx_23060184_Config.v"
 
-/* The Steins Gate Computer Project started on January 22nd, 2024,
-   which is relied on YSYX Project. This CPU design is based on 
+/* The Fire-Core Project started on January 22nd, 2024,
+   which is relied on YSYX Project. This Core design is based on 
    RISC-V Instruction Set Architecture.
 */
 
-module ysyx_23060184_SGC (
-    input                      clk,
-    input                      resetn,
-    output [`DATA_WIDTH - 1:0] pc,
-    output [`DATA_WIDTH - 1:0] inst
+module ysyx_23060184 (
+    input                         clock,
+    input                         resetn,
+    input                         io_interrupt,
+    input                         io_master_awready,
+    output                        io_master_awvalid,
+    output [`DATA_WIDTH - 1:0]    io_master_awaddr,
+    // Transaction identifier used for the ordering of write requests and responses
+    output [`ID_WIDTH - 1:0]      io_master_awid,
+    output [`ALEN - 1:0]          io_master_awlen,
+    output [`ASIZE - 1:0]         io_master_awsize,
+    output [`ABURST - 1:0]        io_master_awburst,
+    input                         io_master_wready,
+    output                        io_master_wvalid,
+    output [`DATA_WIDTH - 1:0]    io_master_wdata,
+    output [`WMASK_LENGTH - 1:0]  io_master_wstrb,
+    output                        io_master_wlast,
+    output                        io_master_bready,
+    input                         io_master_bvalid,
+    input [`ACERR_WIDTH - 1:0]    io_master_bresp,
+    input [`ID_WIDTH - 1:0]       io_master_bid,
+    input                         io_master_arready,
+    output                        io_master_arvalid,
+    output [`DATA_WIDTH - 1:0]    io_master_araddr,
+    output [`ID_WIDTH - 1:0]      io_master_arid,
+    output [`ALEN - 1:0]          io_master_arlen,
+    output [`ASIZE - 1:0]         io_master_arsize,
+    output [`ABURST - 1:0]        io_master_arburst,
+    output                        io_master_rready,
+    input                         io_master_rvalid,
+    input [`ACERR_WIDTH - 1:0]    io_master_rresp,
+    input [`DATA_WIDTH - 1:0]     io_master_rdata,
+    input                         io_master_rlast,
+    output                        io_slave_awready,
+    input                         io_slave_awvalid,
+    input [`DATA_WIDTH - 1:0]     io_slave_awaddr,
+    input [`ID_WIDTH - 1:0]       io_slave_awid,
+    input [`ALEN - 1:0]           io_slave_awlen,
+    input [`ASIZE - 1:0]          io_slave_awsize,
+    input [`ABURST - 1:0]         io_slave_awburst,
+    output                        io_slave_wready,
+    input                         io_slave_wvalid,
+    input [`DATA_WIDTH - 1:0]     io_slave_wdata,
+    input [`WMASK_LENGTH - 1:0]   io_slave_wstrb,
+    input                         io_slave_wlast,
+    input                         io_slave_bready,
+    output                        io_slave_bvalid,
+    output [`ACERR_WIDTH - 1:0]   io_slave_bresp,
+    output [`ID_WIDTH - 1:0]      io_slave_bid,
+    output                        io_slave_arready,
+    input                         io_slave_arvalid,
+    input [`DATA_WIDTH - 1:0]     io_slave_araddr,
+    input [`ID_WIDTH - 1:0]       io_slave_arid,
+    input [`ALEN - 1:0]           io_slave_arlen,
+    input [`ASIZE - 1:0]          io_slave_arsize,
+    input [`ABURST - 1:0]         io_slave_arburst,
+    input                         io_slave_rready,
+    output                        io_slave_rvalid,
+    output [`ACERR_WIDTH - 1:0]   io_slave_rresp,
+    output [`DATA_WIDTH - 1:0]    io_slave_rdata,
+    output                        io_slave_rlast,
+    output [`DATA_WIDTH - 1:0]    pc,
+    output [`DATA_WIDTH - 1:0]    inst
 );
 
     /* 
@@ -37,11 +95,6 @@ module ysyx_23060184_SGC (
       Inst Memory related AXI4 signals Begin
    */
 
-    wire [`DATA_WIDTH - 1:0] i_araddr;
-    wire                     i_arvalid;
-    wire                     i_rready;
-
-
     wire [`DATA_WIDTH - 1:0] PCF, InstF, PCPlus4F;
     assign pc   = PCF;
     assign inst = InstF;
@@ -49,7 +102,7 @@ module ysyx_23060184_SGC (
     wire Branch;
 
     ysyx_23060184_IFU IFU (
-        .clk(clk),
+        .clk(clock),
         .rstn(resetn),
         .Branch(Branch),
         // .Stall(StallF),
@@ -59,22 +112,22 @@ module ysyx_23060184_SGC (
         .CsrRead(CsrReadD),
         .Dready(Dready),
         .grant(grant),
-        .aready(s_aready),
-        .rdata(s_rdata),
-        .rresp(s_rresp),
-        .rvalid(s_rvalid),
+        .arready(io_slave_arready),
+        .rdata(io_slave_rdata),
+        .rresp(io_slave_rresp),
+        .rvalid(io_slave_rvalid),
         .Pready(Pready),
         .pc(PCF),
-        .araddr(i_araddr),
-        .arvalid(i_arvalid),
-        .rready(i_rready),
-        .wready(s_wready),
-        .bresp(s_bresp),
-        .bvalid(s_bvalid),
-        .awready(s_awready),
+        .araddr(io_master_araddr),
+        .arvalid(io_master_arvalid),
+        .rready(io_master_rready),
         .inst(InstF),
         .Ivalid(Ivalid),
         .Irequest(Irequest),
+        .arid(io_master_arid),
+        .arlen(io_master_arlen),
+        .arsize(io_master_arsize),
+        .arburst(io_master_arburst),
         .PCPlus4(PCPlus4F)
     );
 
@@ -98,7 +151,7 @@ module ysyx_23060184_SGC (
     );
 
     ysyx_23060184_RegIFID RegIFID (
-        .clk(clk),
+        .clk(clock),
         .rstn(resetn),
         // .clr(FlushD),
         .Ivalid(Ivalid),
@@ -123,7 +176,7 @@ module ysyx_23060184_SGC (
     wire [   `CSR_LENGTH - 1:0] CsrAddrD;
 
     ysyx_23060184_IDU IDU (
-        .clk(clk),
+        .clk(clock),
         .rstn(resetn),
         .inst(InstD),
         .PCPlus4(PCPlus4W),
@@ -176,7 +229,7 @@ module ysyx_23060184_SGC (
     wire [   `CSR_LENGTH - 1:0] CsrAddrD;
 
     ysyx_23060184_RegIDEXE RegIDEXE (
-        .clk(clk),
+        .clk(clock),
         .resetn(resetn),
         .Dvalid(Dvalid),
         .Eready(Eready),
@@ -244,7 +297,7 @@ module ysyx_23060184_SGC (
     wire [`FWDB_MUX_LENGTH - 1:0] ForwardBE;
 
     ysyx_23060184_EXU EXU (
-        .clk(clk),
+        .clk(clock),
         .rstn(resetn),
         .Dvalid(Dvalid),
         .Mready(Mready),
@@ -287,7 +340,7 @@ module ysyx_23060184_SGC (
 
 
     ysyx_23060184_RegEXMEM RegEXMEM (
-        .clk(clk),
+        .clk(clock),
         .resetn(resetn),
         .Evalid(Evalid),
         .Mready(Mready),
@@ -340,29 +393,21 @@ module ysyx_23060184_SGC (
 
     wire [  `DATA_WIDTH - 1:0] ReadDataM;
 
-    ysyx_23060184_MEMU MEMU (
-        .clk(clk),
+    ysyx_23060184_LSU LSU (
+        .clk(clock),
         .rstn(resetn),
         .ALUResult(ALUResultM),
         .Wready(Wready),
         .Evalid(Evalid),
         .grant(grant),
-        .s_aready(s_aready),
-        .s_rdata(s_rdata),
-        .s_rresp(s_rresp),
-        .s_rvalid(s_rvalid),
-        .s_awready(s_awready),
-        .s_wready(s_wready),
-        .s_bresp(s_bresp),
-        .s_bvalid(s_bvalid),
-        .u_aready(u_aready),
-        .u_rdata(u_rdata),
-        .u_rresp(u_rresp),
-        .u_rvalid(u_rvalid),
-        .u_awready(u_awready),
-        .u_wready(u_wready),
-        .u_bresp(u_bresp),
-        .u_bvalid(u_bvalid),
+        .arready(s_arready),
+        .rdata(s_rdata),
+        .rresp(s_rresp),
+        .rvalid(s_rvalid),
+        .awready(s_awready),
+        .wready(s_wready),
+        .bresp(s_bresp),
+        .bvalid(s_bvalid),
         .MemRead(MemReadE),     // caused by non-blocking assignment 
         .MemWrite(MemWriteE),   // caused by non-blocking assignment
         .Ropcode(RopcodeM),
@@ -390,7 +435,7 @@ module ysyx_23060184_SGC (
     wire [   `CSR_LENGTH - 1:0] CsrAddrW;
 
     ysyx_23060184_RegMEMWB RegMEMWB (
-        .clk(clk),
+        .clk(clock),
         .resetn(resetn),
         .Mvalid(Mvalid),
         .Wready(Wready),
@@ -417,7 +462,7 @@ module ysyx_23060184_SGC (
     wire [`DATA_WIDTH - 1:0] ResultW;
 
     ysyx_23060184_WBU WBU (
-        .clk(clk),
+        .clk(clock),
         .rstn(resetn),
         .Mvalid(Mvalid),
         .ResultSrc(ResultSrcW),
@@ -430,137 +475,137 @@ module ysyx_23060184_SGC (
         .Result(ResultW)
     );
 
-    wire [`NUM_ARB_MASTERS - 1:0] grant;
+    // wire [`NUM_ARB_MASTERS - 1:0] grant;
 
-    ysyx_23060184_Arbiter Arbiter (
-        .clk  (clk),
-        .rstn (resetn),
-        .req  ({Drequest, Irequest}),
-        .s_rvalid(s_rvalid),
-        .s_wready(s_wready),
-        .iraddr(i_araddr),
-        .draddr(d_araddr),
-        .dwaddr(d_awaddr),
-        .dren(MemReadM),
-        .dwen(MemWriteM),
-        .grant(grant)
-    );
+    // ysyx_23060184_Arbiter Arbiter (
+    //     .clk  (clock),
+    //     .rstn (resetn),
+    //     .req  ({Drequest, Irequest}),
+    //     .s_rvalid(s_rvalid),
+    //     .s_wready(s_wready),
+    //     .iraddr(i_araddr),
+    //     .draddr(d_araddr),
+    //     .dwaddr(d_awaddr),
+    //     .dren(MemReadM),
+    //     .dwen(MemWriteM),
+    //     .grant(grant)
+    // );
 
     // SRAM output signals
-    wire                      s_aready;
-    wire [ `DATA_WIDTH - 1:0] s_rdata;
-    wire [`ACERR_WIDTH - 1:0] s_rresp;
-    wire                      s_rvalid;
-    wire                      s_awready;
-    wire                      s_wready;
-    wire [`ACERR_WIDTH - 1:0] s_bresp;
-    wire                      s_bvalid;
+    // wire                      s_aready;
+    // wire [ `DATA_WIDTH - 1:0] s_rdata;
+    // wire [`ACERR_WIDTH - 1:0] s_rresp;
+    // wire                      s_rvalid;
+    // wire                      s_awready;
+    // wire                      s_wready;
+    // wire [`ACERR_WIDTH - 1:0] s_bresp;
+    // wire                      s_bvalid;
 
-    ysyx_23060184_SRAM SRAM (
-        .clk(clk),
-        .rstn(resetn),
+    // ysyx_23060184_SRAM SRAM (
+    //     .clk(clock),
+    //     .rstn(resetn),
 
-        /*
-        Arbiter signals Begin
-      */
-        .grant(grant),
-        /*
-        Arbiter signals End
-      */
+    //     /*
+    //     Arbiter signals Begin
+    //   */
+    //     .grant(grant),
+    //     /*
+    //     Arbiter signals End
+    //   */
 
-        /*
-        DataMem AXI4 Handshake signals Begin
-      */
-        .d_araddr (d_araddr),
-        .d_arvalid(d_arvalid),
-        .d_rready (d_rready),
-        .d_awaddr (d_awaddr),
-        .d_awvalid(d_awvalid),
-        .d_wdata  (d_wdata),
-        .d_wstrb  (d_wstrb),
-        .d_wvalid (d_wvalid),
-        .d_bready (d_bready),
-        /*
-        DataMem AXI4 Handshake signals End
-      */
+    //     /*
+    //     DataMem AXI4 Handshake signals Begin
+    //   */
+    //     .d_araddr (d_araddr),
+    //     .d_arvalid(d_arvalid),
+    //     .d_rready (d_rready),
+    //     .d_awaddr (d_awaddr),
+    //     .d_awvalid(d_awvalid),
+    //     .d_wdata  (d_wdata),
+    //     .d_wstrb  (d_wstrb),
+    //     .d_wvalid (d_wvalid),
+    //     .d_bready (d_bready),
+    //     /*
+    //     DataMem AXI4 Handshake signals End
+    //   */
 
-        /*
-        InstMem AXI4 Handshake signals Begin
-      */
-        .i_araddr (i_araddr),
-        .i_arvalid(i_arvalid),
-        .i_rready (i_rready),
-        /*
-        InstMem AXI4 Handshake signals End
-      */
+    //     /*
+    //     InstMem AXI4 Handshake signals Begin
+    //   */
+    //     .i_araddr (i_araddr),
+    //     .i_arvalid(i_arvalid),
+    //     .i_rready (i_rready),
+    //     /*
+    //     InstMem AXI4 Handshake signals End
+    //   */
 
-        /*
-        SRAM AXI4 Handshake signals Begin
-      */
-        .aready (s_aready),
-        .rdata  (s_rdata),
-        .rresp  (s_rresp),
-        .rvalid (s_rvalid),
-        .awready(s_awready),
-        .wready (s_wready),
-        .bresp  (s_bresp),
-        .bvalid (s_bvalid)
-        /*
-        SRAM AXI4 Handshake signals End
-      */
-    );
+    //     /*
+    //     SRAM AXI4 Handshake signals Begin
+    //   */
+    //     .aready (s_aready),
+    //     .rdata  (s_rdata),
+    //     .rresp  (s_rresp),
+    //     .rvalid (s_rvalid),
+    //     .awready(s_awready),
+    //     .wready (s_wready),
+    //     .bresp  (s_bresp),
+    //     .bvalid (s_bvalid)
+    //     /*
+    //     SRAM AXI4 Handshake signals End
+    //   */
+    // );
 
     // UART output signals
-    wire                      u_aready;
-    wire [ `DATA_WIDTH - 1:0] u_rdata;
-    wire [`ACERR_WIDTH - 1:0] u_rresp;
-    wire                      u_rvalid;
-    wire                      u_awready;
-    wire                      u_wready;
-    wire [`ACERR_WIDTH - 1:0] u_bresp;
-    wire                      u_bvalid;
+    // wire                      u_aready;
+    // wire [ `DATA_WIDTH - 1:0] u_rdata;
+    // wire [`ACERR_WIDTH - 1:0] u_rresp;
+    // wire                      u_rvalid;
+    // wire                      u_awready;
+    // wire                      u_wready;
+    // wire [`ACERR_WIDTH - 1:0] u_bresp;
+    // wire                      u_bvalid;
 
-    ysyx_23060184_UART UART (
-        .clk(clk),
+    // ysyx_23060184_UART UART (
+    //     .clk(clock),
 
-        /*
-        Arbiter signals Begin
-      */
-        .grant(grant),
-        /*
-        Arbiter signals End
-      */
+    //     /*
+    //     Arbiter signals Begin
+    //   */
+    //     .grant(grant),
+    //     /*
+    //     Arbiter signals End
+    //   */
 
-        /*
-        DataMem AXI4 Handshake signals Begin
-      */
-        .araddr (d_araddr),
-        .arvalid(d_arvalid),
-        .rready (d_rready),
-        .awaddr (d_awaddr),
-        .awvalid(d_awvalid),
-        .wdata  (d_wdata),
-        .wstrb  (d_wstrb),
-        .wvalid (d_wvalid),
-        .bready (d_bready),
-        /*
-        DataMem AXI4 Handshake signals End
-      */
+    //     /*
+    //     DataMem AXI4 Handshake signals Begin
+    //   */
+    //     .araddr (d_araddr),
+    //     .arvalid(d_arvalid),
+    //     .rready (d_rready),
+    //     .awaddr (d_awaddr),
+    //     .awvalid(d_awvalid),
+    //     .wdata  (d_wdata),
+    //     .wstrb  (d_wstrb),
+    //     .wvalid (d_wvalid),
+    //     .bready (d_bready),
+    //     /*
+    //     DataMem AXI4 Handshake signals End
+    //   */
 
-        /*
-        UART AXI4 Handshake signals Begin
-      */
-        .aready (u_aready),
-        .rdata  (u_rdata),
-        .rresp  (u_rresp),
-        .rvalid (u_rvalid),
-        .awready(u_awready),
-        .wready (u_wready),
-        .bresp  (u_bresp),
-        .bvalid (u_bvalid)
-        /*
-        UART AXI4 Handshake signals End
-      */
-    );
+    //     /*
+    //     UART AXI4 Handshake signals Begin
+    //   */
+    //     .aready (u_aready),
+    //     .rdata  (u_rdata),
+    //     .rresp  (u_rresp),
+    //     .rvalid (u_rvalid),
+    //     .awready(u_awready),
+    //     .wready (u_wready),
+    //     .bresp  (u_bresp),
+    //     .bvalid (u_bvalid)
+    //     /*
+    //     UART AXI4 Handshake signals End
+    //   */
+    // );
 
 endmodule

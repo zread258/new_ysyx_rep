@@ -7,12 +7,13 @@ module ysyx_23060184_DataMem (
     input                               Wready,
     input                               Evalid,
     input [`NUM_ARB_MASTERS - 1:0]      grant,
+    input                               clint,
     output reg                          Mready,
     output reg                          Mvalid,
 
 
     /* 
-        SRAM AXI4 Handshake signals Begin
+        SoC AXI4 Handshake signals Begin
     */ 
 
     // Read Addr Channel 
@@ -30,30 +31,30 @@ module ysyx_23060184_DataMem (
     input [`ACERR_WIDTH - 1:0]          s_bresp,
 
     /* 
-        SRAM AXI4 Handshake signals End
+        SoC AXI4 Handshake signals End
     */ 
 
 
     /* 
-        UART AXI4 Handshake signals Begin
+        CLINT AXI4 Handshake signals Begin
     */ 
-
+ 
     // Read Addr Channel 
-    input                               u_aready,
+    input                               c_aready,
     // Read Channel
-    input [`DATA_WIDTH - 1:0]           u_rdata,
-    input [`ACERR_WIDTH - 1:0]          u_rresp,
-    input                               u_rvalid,
+    input [`DATA_WIDTH - 1:0]           c_rdata,
+    input [`ACERR_WIDTH - 1:0]          c_rresp,
+    input                               c_rvalid,
     // Write Addr Channel
-    input                               u_awready,
+    input                               c_awready,
     // Write Channel
-    input                               u_wready,
+    input                               c_wready,
     // Write Response Channel
-    input                               u_bvalid,
-    input [`ACERR_WIDTH - 1:0]          u_bresp,
+    input                               c_bvalid,
+    input [`ACERR_WIDTH - 1:0]          c_bresp,
 
     /* 
-        UART AXI4 Handshake signals End
+        CLINT AXI4 Handshake signals End
     */ 
 
 

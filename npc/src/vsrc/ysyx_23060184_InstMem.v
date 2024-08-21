@@ -15,18 +15,16 @@ module ysyx_23060184_InstMem(
     // Read Addr Channel 
     output [`DATA_WIDTH - 1:0]          araddr,
     output reg                          arvalid,
-    input                               aready,
+    input                               arready,
+    output reg [`ID_WIDTH - 1:0]        arid,
+    output reg [`ALEN - 1:0]            arlen,
+    output reg [`ASIZE - 1:0]           arsize,
+    output reg [`ABURST - 1:0]          arburst,
     // Read Channel
     input [`DATA_WIDTH - 1:0]           rdata,
     input [`ACERR_WIDTH - 1:0]          rresp,
     input                               rvalid,
     output reg                          rready,
-
-    // Redundant signals
-    output reg                          wready,
-    output reg [`ACERR_WIDTH - 1:0]     bresp,
-    output reg                          bvalid,
-    output reg                          awready,
 
     /* 
         AXI4 Handshake signals End
@@ -38,14 +36,15 @@ module ysyx_23060184_InstMem(
     input                               Dready,
     output reg                          Ivalid,
     output reg                          Iready,
+    
 
     // Output signals
     output reg                          Irequest,
-    output reg  [`DATA_WIDTH - 1:0]     RD
+    output [`DATA_WIDTH - 1:0]          RD
 );
 
     assign araddr = A;
-    assign RD = rdata;
+    assign RD = rdata[`DATA_WIDTH - 1:0];
     wire Igrant = (grant == `INSTMEM_GRANT) ? 1 : 0;
 
     always @(posedge clk) begin
@@ -53,10 +52,14 @@ module ysyx_23060184_InstMem(
             Iready <= 1;
             Ivalid <= 0;
             rready <= 1;
+            arlen <= 0; // Fix to 0
+            arburst <= 1; // Fix to 1
         end else if (Pvalid && Iready) begin
             Iready <= 0; // Inst Fetch start
             Irequest <= 1; // Inst Fetch request
             arvalid <= 1; // Addr Read request
+            arid <= 0; // InstFetch ID == 0
+            arsize <= 4; // 32-bit
         end 
     end
 
@@ -67,7 +70,7 @@ module ysyx_23060184_InstMem(
     end
 
     always @(posedge clk) begin
-        if (Igrant && arvalid && aready) begin // Addr Handshake
+        if (Igrant && arvalid && arready) begin // Addr Handshake
             rready <= 1; // Read Ready
         end
     end

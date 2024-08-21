@@ -210,6 +210,8 @@
 `define INSTMEM_GRANT    2'b01
 `define DATAMEM_GRANT    2'b10
 `define UART_GRANT       2'b11
+`define CLINT_ADDR_BEGIN 32'h02000000
+`define CLINT_ADDR_END   32'h0200ffff
 
 // Forwarding Multiplexers Control Signals
 `define FWDA_MUX_LENGTH      2
@@ -224,3 +226,10 @@
 `define FWDB_MUX_RESULTW     2'b10
 `define FWDB_MUX_ALURESULTM  2'b11
 
+
+// AMBA-AXI4 Bus MACROS
+`define DDATA_WIDTH 64
+`define ID_WIDTH    4
+`define ALEN        8
+`define ASIZE       3
+`define ABURST      2

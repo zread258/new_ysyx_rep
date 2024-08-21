@@ -1,4 +1,4 @@
-module ysyx_23060184_MEMU (
+module ysyx_23060184_LSU (
 
     input                               clk,
     input                               rstn,
@@ -12,48 +12,21 @@ module ysyx_23060184_MEMU (
     input [`NUM_ARB_MASTERS - 1:0]      grant,
 
     /* 
-        SRAM AXI4 Handshake signals Begin
+        DataMem AXI4 Handshake signals Begin
     */ 
 
-    // Read Addr Channel 
-    input                               s_aready,
-    // Read Channel
-    input [`DATA_WIDTH - 1:0]           s_rdata,
-    input [`ACERR_WIDTH - 1:0]          s_rresp,
-    input                               s_rvalid,
-    // Write Addr Channel
-    input                               s_awready,
-    // Write Channel
-    input                               s_wready,
-    // Write Response Channel
-    input                               s_bvalid,
-    input [`ACERR_WIDTH - 1:0]          s_bresp,
+    input [`NUM_ARB_MASTERS - 1:0]      grant,
+    input                               arready,
+    input [`DATA_WIDTH - 1:0]           rdata,
+    input [`ACERR_WIDTH - 1:0]          rresp,
+    input                               rvalid,
+    input                               awready,
+    input                               wready,
+    input [`ACERR_WIDTH - 1:0]          bresp,
+    input                               bvalid,
 
     /* 
-        SRAM AXI4 Handshake signals End
-    */ 
-
-
-    /* 
-        UART AXI4 Handshake signals Begin
-    */ 
-
-    // Read Addr Channel 
-    input                               u_aready,
-    // Read Channel
-    input [`DATA_WIDTH - 1:0]           u_rdata,
-    input [`ACERR_WIDTH - 1:0]          u_rresp,
-    input                               u_rvalid,
-    // Write Addr Channel
-    input                               u_awready,
-    // Write Channel
-    input                               u_wready,
-    // Write Response Channel
-    input                               u_bvalid,
-    input [`ACERR_WIDTH - 1:0]          u_bresp,
-
-    /* 
-        UART AXI4 Handshake signals End
+        DataMem AXI4 Handshake signals End
     */ 
 
 
@@ -97,6 +70,8 @@ module ysyx_23060184_MEMU (
     output reg                          Drequest
 );
 
+    wire clint;
+
     ysyx_23060184_DataMem DataMem (
       .clk(clk),
       .resetn(rstn),
@@ -104,6 +79,7 @@ module ysyx_23060184_MEMU (
       .Wready(Wready),
       .Evalid(Evalid),
       .grant(grant),
+      .clint(clint),
       .Mvalid(Mvalid),
       .Mready(Mready),
       .araddr(d_araddr),
@@ -154,6 +130,17 @@ module ysyx_23060184_MEMU (
       .ropcode(Ropcode),
       .Drequest(Drequest),
       .result(ReadData)
+   );
+
+   ysyx_23060184_CLINT CLINT (
+      .clk(clk),
+      .resetn(rstn),
+      
+   );
+
+   ysyx_23060184_Xbar Xbar (
+      .raddr(ALUResult),
+      .clint(clint)
    );
 
 endmodule

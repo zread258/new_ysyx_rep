@@ -1,4 +1,4 @@
-TOPNAME=ysyx_23060184_SGC
+TOPNAME=ysyx_23060184
 INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/csrc/include
 INC_PATH += /home/csardas/ysyx-workbench/npc/include
 INC_PATH += /home/csardas/ysyx-workbench/npc/build/obj_dir
