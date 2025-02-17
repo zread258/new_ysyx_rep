@@ -4,7 +4,7 @@ module ysyx_23060184_InstMem(
 
     // Input signals
     input [`DATA_WIDTH - 1:0]           A,
-    input [`NUM_ARB_MASTERS - 1:0]      grant,
+    input                               grant,
     // input                               Stall,
 
 
@@ -13,7 +13,7 @@ module ysyx_23060184_InstMem(
     */ 
 
     // Read Addr Channel 
-    output [`DATA_WIDTH - 1:0]          araddr,
+    output reg [`DATA_WIDTH - 1:0]      araddr,
     output reg                          arvalid,
     input                               arready,
     output reg [`ID_WIDTH - 1:0]        arid,
@@ -40,12 +40,11 @@ module ysyx_23060184_InstMem(
 
     // Output signals
     output reg                          Irequest,
-    output [`DATA_WIDTH - 1:0]          RD
+    output reg [`DATA_WIDTH - 1:0]      RD
 );
 
     assign araddr = A;
-    assign RD = rdata[`DATA_WIDTH - 1:0];
-    wire Igrant = (grant == `INSTMEM_GRANT) ? 1 : 0;
+    // assign RD = rdata[`DATA_WIDTH - 1:0];
 
     always @(posedge clk) begin
         if (~resetn) begin
@@ -53,13 +52,13 @@ module ysyx_23060184_InstMem(
             Ivalid <= 0;
             rready <= 1;
             arlen <= 0; // Fix to 0
-            arburst <= 1; // Fix to 1
+            arburst <= 2'b01; // Fix to 1
         end else if (Pvalid && Iready) begin
             Iready <= 0; // Inst Fetch start
             Irequest <= 1; // Inst Fetch request
             arvalid <= 1; // Addr Read request
             arid <= 0; // InstFetch ID == 0
-            arsize <= 4; // 32-bit
+            arsize <= 3'b010; // 32-bit 00--1 byte 01--2 bytes 10--4 bytes 11--8 bytes
         end 
     end
 
@@ -70,17 +69,18 @@ module ysyx_23060184_InstMem(
     end
 
     always @(posedge clk) begin
-        if (Igrant && arvalid && arready) begin // Addr Handshake
-            rready <= 1; // Read Ready
+        if (grant && arvalid && arready) begin // Addr Handshake
+            rready <= 0; // Read Ready
         end
     end
 
     always @ (posedge clk) begin
-        if (Igrant && rvalid && rready) begin // Read Handshake
+        if (grant && rvalid && rready) begin // Read Handshake
             arvalid <= 0;
-            rready <= 0;
+            rready <= 1;
             Ivalid <= 1;
             Iready <= 1;
+            RD <= rdata;
             Irequest <= 0;
         end
     end

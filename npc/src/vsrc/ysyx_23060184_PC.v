@@ -12,7 +12,7 @@ module ysyx_23060184_PC (
 
     always @(posedge clk) begin
         if (!rstn) begin
-            PC <= 32'h80000000;
+            PC <= 32'h20000000;
             Pvalid <= 1;
             Pready <= 1;
         end

@@ -6,73 +6,75 @@
 */
 
 module ysyx_23060184 (
-    input                         clock,
-    input                         resetn,
-    input                         io_interrupt,
-    input                         io_master_awready,
-    output                        io_master_awvalid,
-    output [`DATA_WIDTH - 1:0]    io_master_awaddr,
+    input                                 clock,
+    input                                 reset,
+    input                                 io_interrupt,
+    input                                 io_master_awready,
+    output reg                            io_master_awvalid,
+    output reg [`DATA_WIDTH - 1:0]        io_master_awaddr,
     // Transaction identifier used for the ordering of write requests and responses
-    output [`ID_WIDTH - 1:0]      io_master_awid,
-    output [`ALEN - 1:0]          io_master_awlen,
-    output [`ASIZE - 1:0]         io_master_awsize,
-    output [`ABURST - 1:0]        io_master_awburst,
-    input                         io_master_wready,
-    output                        io_master_wvalid,
-    output [`DATA_WIDTH - 1:0]    io_master_wdata,
-    output [`WMASK_LENGTH - 1:0]  io_master_wstrb,
-    output                        io_master_wlast,
-    output                        io_master_bready,
-    input                         io_master_bvalid,
-    input [`ACERR_WIDTH - 1:0]    io_master_bresp,
-    input [`ID_WIDTH - 1:0]       io_master_bid,
-    input                         io_master_arready,
-    output                        io_master_arvalid,
-    output [`DATA_WIDTH - 1:0]    io_master_araddr,
-    output [`ID_WIDTH - 1:0]      io_master_arid,
-    output [`ALEN - 1:0]          io_master_arlen,
-    output [`ASIZE - 1:0]         io_master_arsize,
-    output [`ABURST - 1:0]        io_master_arburst,
-    output                        io_master_rready,
-    input                         io_master_rvalid,
-    input [`ACERR_WIDTH - 1:0]    io_master_rresp,
-    input [`DATA_WIDTH - 1:0]     io_master_rdata,
-    input                         io_master_rlast,
-    output                        io_slave_awready,
-    input                         io_slave_awvalid,
-    input [`DATA_WIDTH - 1:0]     io_slave_awaddr,
-    input [`ID_WIDTH - 1:0]       io_slave_awid,
-    input [`ALEN - 1:0]           io_slave_awlen,
-    input [`ASIZE - 1:0]          io_slave_awsize,
-    input [`ABURST - 1:0]         io_slave_awburst,
-    output                        io_slave_wready,
-    input                         io_slave_wvalid,
-    input [`DATA_WIDTH - 1:0]     io_slave_wdata,
-    input [`WMASK_LENGTH - 1:0]   io_slave_wstrb,
-    input                         io_slave_wlast,
-    input                         io_slave_bready,
-    output                        io_slave_bvalid,
-    output [`ACERR_WIDTH - 1:0]   io_slave_bresp,
-    output [`ID_WIDTH - 1:0]      io_slave_bid,
-    output                        io_slave_arready,
-    input                         io_slave_arvalid,
-    input [`DATA_WIDTH - 1:0]     io_slave_araddr,
-    input [`ID_WIDTH - 1:0]       io_slave_arid,
-    input [`ALEN - 1:0]           io_slave_arlen,
-    input [`ASIZE - 1:0]          io_slave_arsize,
-    input [`ABURST - 1:0]         io_slave_arburst,
-    input                         io_slave_rready,
-    output                        io_slave_rvalid,
-    output [`ACERR_WIDTH - 1:0]   io_slave_rresp,
-    output [`DATA_WIDTH - 1:0]    io_slave_rdata,
-    output                        io_slave_rlast,
-    output [`DATA_WIDTH - 1:0]    pc,
-    output [`DATA_WIDTH - 1:0]    inst
+    output reg [`ID_WIDTH - 1:0]          io_master_awid,
+    output reg [`ALEN - 1:0]              io_master_awlen,
+    output reg [`ASIZE - 1:0]             io_master_awsize,
+    output reg [`ABURST - 1:0]            io_master_awburst,
+    input                                 io_master_wready,
+    output reg                            io_master_wvalid,
+    output reg [`DATA_WIDTH - 1:0]        io_master_wdata,
+    output reg [`WSTRB_WIDTH - 1:0]       io_master_wstrb,
+    output reg                            io_master_wlast,
+    output reg                            io_master_bready,
+    input                                 io_master_bvalid,
+    input [`ACERR_WIDTH - 1:0]            io_master_bresp,
+    input [`ID_WIDTH - 1:0]               io_master_bid,
+    input                                 io_master_arready,
+    output                                io_master_arvalid,
+    output reg [`DATA_WIDTH - 1:0]        io_master_araddr,
+    output reg [`ID_WIDTH - 1:0]          io_master_arid,
+    output reg [`ALEN - 1:0]              io_master_arlen,
+    output reg [`ASIZE - 1:0]             io_master_arsize,
+    output reg [`ABURST - 1:0]            io_master_arburst,
+    output reg                            io_master_rready,
+    input                                 io_master_rvalid,
+    input [`ACERR_WIDTH - 1:0]            io_master_rresp,
+    input [`DATA_WIDTH - 1:0]             io_master_rdata,
+    input                                 io_master_rlast,
+    input [`ID_WIDTH - 1:0]               io_master_rid,
+    output reg                            io_slave_awready,
+    input                                 io_slave_awvalid,
+    input [`DATA_WIDTH - 1:0]             io_slave_awaddr,
+    input [`ID_WIDTH - 1:0]               io_slave_awid,
+    input [`ALEN - 1:0]                   io_slave_awlen,
+    input [`ASIZE - 1:0]                  io_slave_awsize,
+    input [`ABURST - 1:0]                 io_slave_awburst,
+    output reg                            io_slave_wready,
+    input                                 io_slave_wvalid,
+    input [`DATA_WIDTH - 1:0]             io_slave_wdata,
+    input [`WSTRB_WIDTH - 1:0]            io_slave_wstrb,
+    input                                 io_slave_wlast,
+    input                                 io_slave_bready,
+    output reg                            io_slave_bvalid,
+    output reg [`ACERR_WIDTH - 1:0]       io_slave_bresp,
+    output reg [`ID_WIDTH - 1:0]          io_slave_bid,
+    output reg                            io_slave_arready,
+    input                                 io_slave_arvalid,
+    input [`DATA_WIDTH - 1:0]             io_slave_araddr,
+    input [`ID_WIDTH - 1:0]               io_slave_arid,
+    input [`ALEN - 1:0]                   io_slave_arlen,
+    input [`ASIZE - 1:0]                  io_slave_arsize,
+    input [`ABURST - 1:0]                 io_slave_arburst,
+    input                                 io_slave_rready,
+    output reg                            io_slave_rvalid,
+    output reg [`ACERR_WIDTH - 1:0]       io_slave_rresp,
+    output reg [`DATA_WIDTH - 1:0]        io_slave_rdata,
+    output reg                            io_slave_rlast,
+    output reg[`ID_WIDTH - 1:0]           io_slave_rid
 );
 
     /* 
       CPU-related signals Begin
    */
+    wire                     resetn;
+    assign resetn            = ~reset;
 
     wire                     Pready;
     wire                     Ivalid;
@@ -96,10 +98,27 @@ module ysyx_23060184 (
    */
 
     wire [`DATA_WIDTH - 1:0] PCF, InstF, PCPlus4F;
-    assign pc   = PCF;
-    assign inst = InstF;
+    wire ifu_grant, lsu_grant;
 
     wire Branch;
+
+    /*
+      IFU related AXI4 signals Begin
+   */
+
+    wire [  `DATA_WIDTH - 1:0] ifu_araddr;
+    // wire                       d_arvalid;
+    // wire                       d_rready;
+    // wire [  `DATA_WIDTH - 1:0] d_awaddr;
+    // wire                       d_awvalid;
+    // wire [  `DATA_WIDTH - 1:0] d_wdata;
+    // wire [`WMASK_LENGTH - 1:0] d_wstrb;
+    // wire                       d_wvalid;
+    // wire                       d_bready;
+
+    /*
+      IFU related AXI4 signals End
+   */
 
     ysyx_23060184_IFU IFU (
         .clk(clock),
@@ -111,14 +130,15 @@ module ysyx_23060184 (
         .ALUResult(ALUResultE),
         .CsrRead(CsrReadD),
         .Dready(Dready),
-        .grant(grant),
-        .arready(io_slave_arready),
-        .rdata(io_slave_rdata),
-        .rresp(io_slave_rresp),
-        .rvalid(io_slave_rvalid),
+        .grant(ifu_grant),
+        .arready(io_master_arready),
+        .rdata(io_master_rdata),
+        .rresp(io_master_rresp),
+        .rvalid(io_master_rvalid),
+        .rlast(io_master_rlast),
         .Pready(Pready),
         .pc(PCF),
-        .araddr(io_master_araddr),
+        .araddr(ifu_araddr),
         .arvalid(io_master_arvalid),
         .rready(io_master_rready),
         .inst(InstF),
@@ -374,21 +394,21 @@ module ysyx_23060184 (
 
 
     /*
-      Data Memory related AXI4 signals Begin
+      LSU related AXI4 signals Begin
    */
 
-    wire [  `DATA_WIDTH - 1:0] d_araddr;
-    wire                       d_arvalid;
-    wire                       d_rready;
-    wire [  `DATA_WIDTH - 1:0] d_awaddr;
-    wire                       d_awvalid;
-    wire [  `DATA_WIDTH - 1:0] d_wdata;
-    wire [`WMASK_LENGTH - 1:0] d_wstrb;
-    wire                       d_wvalid;
-    wire                       d_bready;
+    wire [  `DATA_WIDTH - 1:0] lsu_araddr;
+    // wire                       d_arvalid;
+    // wire                       d_rready;
+    // wire [  `DATA_WIDTH - 1:0] d_awaddr;
+    // wire                       d_awvalid;
+    // wire [  `DATA_WIDTH - 1:0] d_wdata;
+    // wire [`WMASK_LENGTH - 1:0] d_wstrb;
+    // wire                       d_wvalid;
+    // wire                       d_bready;
 
     /*
-      Data Memory related AXI4 signals End
+      LSU related AXI4 signals End
    */
 
     wire [  `DATA_WIDTH - 1:0] ReadDataM;
@@ -399,31 +419,45 @@ module ysyx_23060184 (
         .ALUResult(ALUResultM),
         .Wready(Wready),
         .Evalid(Evalid),
-        .grant(grant),
-        .arready(s_arready),
-        .rdata(s_rdata),
-        .rresp(s_rresp),
-        .rvalid(s_rvalid),
-        .awready(s_awready),
-        .wready(s_wready),
-        .bresp(s_bresp),
-        .bvalid(s_bvalid),
-        .MemRead(MemReadE),     // caused by non-blocking assignment 
-        .MemWrite(MemWriteE),   // caused by non-blocking assignment
+        .grant(lsu_grant),
+        .arready(io_master_arready),
+        .rdata(io_master_rdata),
+        .rlast(io_master_rlast),
+        .rid(io_master_rid),
+        .rresp(io_master_rresp),
+        .rvalid(io_master_rvalid),
+        .awready(io_master_awready),
+        .wready(io_master_wready),
+        .bresp(io_master_bresp),
+        .bid(io_master_bid),
+        .bvalid(io_master_bvalid),
+        .MemReadE(MemReadE),
+        .MemWriteE(MemWriteE),
+        .MemRead(MemReadM),     // caused by non-blocking assignment 
+        .MemWrite(MemWriteM),   // caused by non-blocking assignment
         .Ropcode(RopcodeM),
         .Wmask(WmaskM),
         .WriteData(WriteDataM),
         .Mready(Mready),
         .Mvalid(Mvalid),
-        .d_araddr(d_araddr),
-        .d_arvalid(d_arvalid),
-        .d_rready(d_rready),
-        .d_awaddr(d_awaddr),
-        .d_awvalid(d_awvalid),
-        .d_wdata(d_wdata),
-        .d_wstrb(d_wstrb),
-        .d_wvalid(d_wvalid),
-        .d_bready(d_bready),
+        .araddr(lsu_araddr),
+        .arid(io_master_arid),
+        .arlen(io_master_arlen),
+        .arsize(io_master_arsize),
+        .arburst(io_master_arburst),
+        .arvalid(io_master_arvalid),
+        .rready(io_master_rready),
+        .awaddr(io_master_awaddr),
+        .awvalid(io_master_awvalid),
+        .awid(io_master_awid),
+        .awlen(io_master_awlen),
+        .awsize(io_master_awsize),
+        .awburst(io_master_awburst),
+        .wdata(io_master_wdata),
+        .wstrb(io_master_wstrb),
+        .wvalid(io_master_wvalid),
+        .wlast(io_master_wlast),
+        .bready(io_master_bready),
         .Drequest(Drequest),
         .ReadData(ReadDataM)
     );
@@ -473,6 +507,18 @@ module ysyx_23060184 (
         .Wready(Wready),
         .Wvalid(Wvalid),
         .Result(ResultW)
+    );
+
+    ysyx_23060184_Xbar Xbar (
+        .clk(clock),
+        .rstn(resetn),
+        .ifu_req(Irequest),
+        .lsu_req(Drequest),
+        .ifu_araddr(ifu_araddr),
+        .lsu_araddr(lsu_araddr),
+        .ifu_grant(ifu_grant),
+        .lsu_grant(lsu_grant),
+        .io_master_araddr(io_master_araddr)
     );
 
     // wire [`NUM_ARB_MASTERS - 1:0] grant;

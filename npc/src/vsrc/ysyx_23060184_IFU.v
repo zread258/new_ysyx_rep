@@ -35,11 +35,12 @@ module ysyx_23060184_IFU (
     */
 
     input                               Dready,
-    input [`NUM_ARB_MASTERS - 1:0]      grant,
+    input                               grant,
     input                               arready,
     input [`DATA_WIDTH - 1:0]           rdata,
     input [`ACERR_WIDTH - 1:0]          rresp,
     input                               rvalid,
+    input                               rlast,
 
     /*
         InstMem Input Signals End

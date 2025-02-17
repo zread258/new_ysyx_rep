@@ -13,18 +13,18 @@ static VerilatedContext *contextp = NULL;
 static VerilatedVcdC *tfp = NULL;
 #endif
 
-Vysyx_23060184_SGC *dut;
+VysyxSoCFull *dut;
 
 static bool npc_halt_ret = false;
 
 void step_and_dump_wave() {
-  dut->clk = 1;
+  dut->clock = 1;
   dut->eval();
 #ifdef CONFIG_WAVEVCD
   contextp->timeInc(1);
   tfp->dump(contextp->time());
 #endif
-  dut->clk = 0;
+  dut->clock = 0;
   dut->eval();
 #ifdef CONFIG_WAVEVCD
   contextp->timeInc(1);
@@ -33,7 +33,7 @@ void step_and_dump_wave() {
 }
 
 void sim_init() {
-  dut = new Vysyx_23060184_SGC;
+  dut = new VysyxSoCFull;
 #ifdef CONFIG_WAVEVCD
   Verilated::traceEverOn(true); // Enable Wavetrace
   contextp = new VerilatedContext;
@@ -46,7 +46,7 @@ void sim_init() {
 
 void sim_exit() {
   step_and_dump_wave();
-  dut->clk = 0;
+  dut->clock = 0;
   dut->eval();
 #ifdef CONFIG_WAVEVCD
   contextp->timeInc(1);
@@ -56,19 +56,20 @@ void sim_exit() {
 }
 
 void machine_init() {
-  dut->resetn = 0;
-  step_and_dump_wave();
-  step_and_dump_wave();
-  dut->resetn = 1;
+  dut->reset = 1;
+  for (int i = 0; i < 20; i++) {
+    step_and_dump_wave();
+  }
+  dut->reset = 0;
   // difftest_skip_ref();
 }
 
 word_t get_curpc() {
-  return dut->pc;
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCF;
 }
 
 word_t get_inst() {
-  return dut->inst;
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__InstF;
 }
 
 extern "C" void sim_break() {
@@ -95,4 +96,10 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
     default: assert(0);
   }
   paddr_write(waddr, len, wdata);
+}
+
+extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
+
+extern "C" void mrom_read(int32_t addr, int32_t *data) { 
+  *data = paddr_read(addr, 4);
 }

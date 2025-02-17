@@ -212,6 +212,9 @@
 `define UART_GRANT       2'b11
 `define CLINT_ADDR_BEGIN 32'h02000000
 `define CLINT_ADDR_END   32'h0200ffff
+/* SOC defination isn't used temporarily */
+// `define SOC_ADDR_BEGIN   32'h02000000
+// `define SOC_ADDR_END     32'h0200ffff
 
 // Forwarding Multiplexers Control Signals
 `define FWDA_MUX_LENGTH      2
@@ -233,3 +236,4 @@
 `define ALEN        8
 `define ASIZE       3
 `define ABURST      2
+`define WSTRB_WIDTH 4

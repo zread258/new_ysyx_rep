@@ -6,8 +6,8 @@
 
 #include <isa.h>
 #include "local-include/reg.h"
-#include "Vysyx_23060184_SGC.h"
-#include "Vysyx_23060184_SGC___024root.h"
+#include "VysyxSoCFull.h"
+#include "VysyxSoCFull___024root.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
@@ -21,12 +21,12 @@ const char *regs[] = {
 #define NR_GPR MUXDEF(CONFIG_RVE, 16, 32)
 
 bool instr_valid() {
-  return dut->rootp->ysyx_23060184_SGC__DOT__Ivalid;
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Ivalid;
 }
 
 void update_cpu_reg() {
   for (int i = 0; i < NR_GPR; i++) {
-    cpu.gpr[i] = dut->rootp->ysyx_23060184_SGC__DOT__IDU__DOT__RegFile__DOT__rf[i];
+    cpu.gpr[i] = dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IDU__DOT__RegFile__DOT__rf[i];
   }
   cpu.mstatus = csr(0x300);
   cpu.mtvec = csr(0x305);
@@ -36,7 +36,7 @@ void update_cpu_reg() {
 
 void isa_reg_display() {
   for (int i = 0; i < NR_GPR; i++) {
-    word_t val = dut->rootp->ysyx_23060184_SGC__DOT__IDU__DOT__RegFile__DOT__rf[i];
+    word_t val = dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IDU__DOT__RegFile__DOT__rf[i];
     printf("%s\t0x%08x\t%010u\n", regs[i], val, val);
   }
 }
@@ -49,7 +49,7 @@ word_t isa_reg_str2val(const char *s, bool *success) {
       break;
     }
   }
-  return dut->rootp->ysyx_23060184_SGC__DOT__IDU__DOT__RegFile__DOT__rf[i];
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__IDU__DOT__RegFile__DOT__rf[i];
 }
 
 word_t csr_reg_str2val(const char *s, bool *success) {

@@ -1,7 +1,8 @@
-TOPNAME=ysyx_23060184
+TOPNAME=ysyxSoCFull
 INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/csrc/include
 INC_PATH += /home/csardas/ysyx-workbench/npc/include
 INC_PATH += /home/csardas/ysyx-workbench/npc/build/obj_dir
+INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip
 # INC_PATH += $(NPC_HOME)/src/csrc/src/isa/riscv32/include
 INC_PATH += /usr/lib/llvm-11/include
 
@@ -9,6 +10,10 @@ VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc -trace \
 				-O3 --x-assign fast --x-initial fast --noassert
 VERILATOR_INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/vsrc/include
+VERILATOR_INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip/uart16550/rtl
+VERILATOR_INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip/spi/rtl
+
+VERILATOR_INC_FLAGS = $(addprefix -I, $(VERILATOR_INC_PATH))
 
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
@@ -23,6 +28,8 @@ include $(FILELIST_MK)
 
 # project source
 VSRCS = $(shell find $(abspath ./src/vsrc) -name "*.v")
+VSRCS += $(shell find $(abspath ../ysyxSoC/perip) -name "*.v")
+VSRCS += $(shell find $(abspath ../ysyxSoC/build) -name "*.v")
 CSRCS = $(shell find $(abspath ./src/csrc) -name "*.c" -or -name "*.cc" \
 -or -name "*.cpp")
 
@@ -58,7 +65,8 @@ $(BIN): $(VSRCS) $(CSRCS)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
 		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
-		-I$(VERILATOR_INC_PATH) \
+		$(VERILATOR_INC_FLAGS) \
+		--timescale "1ns/1ns" --no-timing \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN)) 
 
 all: default

@@ -10,7 +10,8 @@
 #include <common.h>
 #include <stdint.h>
 
-#include "Vysyx_23060184_SGC.h"
+#include "VysyxSoCFull.h"
+#include "VysyxSoCFull___024root.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
@@ -29,7 +30,7 @@ void init_isa();
 
 // reg
 extern CPU_state cpu;
-extern Vysyx_23060184_SGC *dut;
+extern VysyxSoCFull *dut;
 word_t get_curpc();
 word_t get_inst();
 extern "C" void get_regval(int num, int result);

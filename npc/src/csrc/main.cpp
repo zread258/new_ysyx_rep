@@ -10,9 +10,11 @@
 
 int main(int argc, char *argv[]) {
 
-  // sim_init();
+  Verilated::commandArgs(argc, argv);
 
-  // machine_init();
+  sim_init();
+
+  machine_init();
 
   init_monitor(argc, argv);
 
