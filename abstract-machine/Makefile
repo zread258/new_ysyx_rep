@@ -79,6 +79,7 @@ READELF   = $(CROSS_COMPILE)readelf
 INC_PATH += $(WORK_DIR)/include $(addsuffix /include/, $(addprefix $(AM_HOME)/, $(LIBS)))
 #### Add npc.h npc_trap ebreak instruction
 INC_PATH += /home/csardas/ysyx-workbench/abstract-machine/am/src/riscv/npc/include
+INC_PATH += /home/csardas/ysyx-workbench/abstract-machine/am/src/riscv/ysyxsoc/include
 INCFLAGS += $(addprefix -I, $(INC_PATH))
 
 ARCH_H := arch/$(ARCH).h

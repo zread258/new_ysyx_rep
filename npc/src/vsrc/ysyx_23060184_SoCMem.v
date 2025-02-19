@@ -80,13 +80,13 @@ module ysyx_23060184_SoCMem (
     */
     always @(posedge clk) begin
         if (MemRead && grant && arvalid && arready) begin
+            arvalid <= 0;
             rready <= 1;
         end
     end
 
     always @ (posedge clk) begin
         if (MemRead && grant && rvalid && rready) begin
-            arvalid <= 0;
             rready <= 0;
             Mvalid <= 1;
             Mready <= 0;
@@ -96,24 +96,35 @@ module ysyx_23060184_SoCMem (
 
     always @ (posedge clk) begin
         if (MemWrite && grant && awvalid && awready) begin
+            awvalid <= 0;
             wvalid <= 1;
+            wlast <= 1;
         end
     end
     
     always @ (posedge clk) begin
         if (MemWrite && grant && wvalid && wready) begin
-            awvalid <= 0;
-            // wvalid <= 0;
-            wlast <= 1;
+            wvalid <= 0;
+            wlast <= 0;
             bready <= 1;
-            if (bvalid && bready) begin
-                bready <= 0;
-            end
+            // if (bvalid && bready) begin
+            //     bready <= 0;
+            // end
+            // Mvalid <= 1;
+            // Mready <= 0;
+            // Drequest <= 0;
+        end
+    end
+
+    always @ (posedge clk) begin
+        if (MemWrite && grant && bvalid && bready) begin
+            bready <= 0;
             Mvalid <= 1;
             Mready <= 0;
             Drequest <= 0;
         end
     end
+    
     /*
         SoC AXI4 Transaction End
     */

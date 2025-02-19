@@ -85,6 +85,7 @@ module ysyx_23060184_LSU (
 
     wire soc;
     wire clint;
+    reg idle;
 
     always @(posedge clk) begin
         if (!rstn) begin
@@ -99,6 +100,7 @@ module ysyx_23060184_LSU (
             awlen <= 0; // fix to 0 which means always single transfer
             awsize <= 3'b010;
             awburst <= 2'b01;
+            idle <= 1;
         end else if (Evalid && Mready) begin
             Mready <= 0;
             if (~MemReadE && ~MemWriteE) begin
@@ -112,11 +114,13 @@ module ysyx_23060184_LSU (
     end
 
     always @ (posedge clk) begin
-        if (grant && MemRead) begin
+        if (idle && grant && MemRead) begin
             arvalid <= 1;
+            idle <= 0;
         end
-        else if (grant && MemWrite) begin
+        else if (idle && grant && MemWrite) begin
             awvalid <= 1;
+            idle <= 0;
         end
     end
 
@@ -124,6 +128,7 @@ module ysyx_23060184_LSU (
         if (Mvalid && Wready) begin
             Mvalid <= 0;
             Mready <= 1;
+            idle <= 1;
         end
     end
 
