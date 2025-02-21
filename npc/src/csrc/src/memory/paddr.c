@@ -10,7 +10,8 @@
 #include <device/mmio.h>
 
 
-static uint8_t pmem[CONFIG_MSIZE] = {};
+static uint8_t mrom[CONFIG_MROM_SIZE] PG_ALIGN = {};
+static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
 
 static const uint32_t img [] = {
   0x00000297,  // auipc t0,0
@@ -26,11 +27,22 @@ void display_pread(paddr_t addr, int len, word_t data);
 void display_pwrite(paddr_t addr, int len, word_t data);
 #endif
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
-paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
+uint8_t* guest_to_host(paddr_t paddr) { 
+  if (addr_is_rom(paddr)) return mrom + paddr - MROM_LEFT;
+  if (addr_is_sram(paddr)) return sram + paddr - SRAM_LEFT;
+  return mrom + paddr - MROM_LEFT;
+  // return pmem + paddr - CONFIG_MBASE; 
+}
+
+paddr_t host_to_guest(uint8_t *haddr) { 
+  if (haddr >= mrom && haddr < mrom + CONFIG_MROM_SIZE) return MROM_LEFT + haddr - mrom;
+  if (haddr >= sram && haddr < sram + CONFIG_SRAM_SIZE) return SRAM_LEFT + haddr - sram;
+  return MROM_LEFT + haddr - mrom;
+  // return haddr - pmem + CONFIG_MBASE; 
+}
 
 void init_mem() {
-  memcpy(guest_to_host(CONFIG_MBASE), img, sizeof(img));
+  memcpy(guest_to_host(MROM_LEFT), img, sizeof(img));
 }
 
 static word_t pmem_read(paddr_t addr, int len) {
@@ -41,12 +53,17 @@ static word_t pmem_read(paddr_t addr, int len) {
 
 static void pmem_write(paddr_t addr, int len, word_t data) {
   IFDEF(CONFIG_MTRACE, display_pwrite(addr, len, data));
+  if (addr_is_rom(addr)) {
+    panic("write " FMT_WORD " at " FMT_PADDR \
+      "\nmrom do not support write operations ", data, addr);
+  }
   host_write(guest_to_host(addr), len, data);
 }
 
 static void out_of_bound(paddr_t addr) {
-  panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
-      addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
+  panic("address = " FMT_PADDR " is out of bound of mrom [" FMT_PADDR ", " FMT_PADDR "] and \
+        sram [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
+      addr, MROM_LEFT, MROM_RIGHT, SRAM_LEFT, SRAM_RIGHT, cpu.pc);
 }
 
 word_t inst_fetch(paddr_t pc) {

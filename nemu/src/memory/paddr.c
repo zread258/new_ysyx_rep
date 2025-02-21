@@ -52,6 +52,10 @@ static word_t pmem_read(paddr_t addr, int len) {
 
 static void pmem_write(paddr_t addr, int len, word_t data) {
   IFDEF(CONFIG_MTRACE, display_pwrite(addr, len, data));
+  if (addr_is_rom(addr)) {
+    panic("write " FMT_WORD " at " FMT_PADDR \
+      "\nmrom do not support write operations ", data, addr);
+  }
   host_write(guest_to_host(addr), len, data);
 }
 
