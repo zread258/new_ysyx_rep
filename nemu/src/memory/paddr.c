@@ -20,8 +20,9 @@
 
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
-#else // CONFIG_PMEM_GARRAY
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
+#else // CONFIG_MROM_GARRAY
+static uint8_t mrom[CONFIG_MROM_SIZE] PG_ALIGN = {};
+static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
 #endif
 
 #if CONFIG_MTRACE == 1
@@ -29,8 +30,19 @@ void display_pread(paddr_t addr, int len, word_t data);
 void display_pwrite(paddr_t addr, int len, word_t data);
 #endif
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
-paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
+uint8_t* guest_to_host(paddr_t paddr) { 
+  if (addr_is_rom(paddr)) return mrom + paddr - MROM_LEFT;
+  if (addr_is_sram(paddr)) return sram + paddr - SRAM_LEFT;
+  return mrom + paddr - MROM_LEFT;
+  // return pmem + paddr - CONFIG_MBASE; 
+}
+
+paddr_t host_to_guest(uint8_t *haddr) { 
+  if (haddr >= mrom && haddr < mrom + CONFIG_MROM_SIZE) return MROM_LEFT + haddr - mrom;
+  if (haddr >= sram && haddr < sram + CONFIG_SRAM_SIZE) return SRAM_LEFT + haddr - sram;
+  return MROM_LEFT + haddr - mrom;
+  // return haddr - pmem + CONFIG_MBASE; 
+}
 
 static word_t pmem_read(paddr_t addr, int len) {
   word_t ret = host_read(guest_to_host(addr), len);
@@ -44,8 +56,9 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
 }
 
 static void out_of_bound(paddr_t addr) {
-  panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
-      addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
+  panic("address = " FMT_PADDR " is out of bound of mrom [" FMT_PADDR ", " FMT_PADDR "] and \
+        sram [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
+      addr, MROM_LEFT, MROM_RIGHT, SRAM_LEFT, SRAM_RIGHT, cpu.pc);
 }
 
 void init_mem() {
@@ -53,8 +66,8 @@ void init_mem() {
   pmem = malloc(CONFIG_MSIZE);
   assert(pmem);
 #endif
-  IFDEF(CONFIG_MEM_RANDOM, memset(pmem, rand(), CONFIG_MSIZE));
-  Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
+  IFDEF(CONFIG_MEM_RANDOM, memset(sram, rand(), CONFIG_SRAM_SIZE));
+  Log("physical sram area [" FMT_PADDR ", " FMT_PADDR "]", SRAM_LEFT, SRAM_RIGHT);
 }
 
 word_t paddr_read(paddr_t addr, int len) {

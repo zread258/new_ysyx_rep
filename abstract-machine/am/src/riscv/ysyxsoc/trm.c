@@ -1,9 +1,12 @@
 #include <ysyxsoc.h>
 #include <am.h>
+#include <klib.h>
 #include <riscv/riscv.h>
 #include <klib-macros.h>
 
-extern char _heap_start;
+extern int _heap_start;
+extern int _etext;
+extern int _data;
 int main(const char *args);
 
 extern char _pmem_start;
@@ -27,7 +30,15 @@ void halt(int code) {
   while (1);
 }
 
+void bootloader() {
+  memcpy((void*)_etext , (void*)MROM_ORIGIN, _data - _etext);
+}
+
 void _trm_init() {
+  // bootloader
+  // bootloader();
+  // putch('H');
+
   int ret = main(mainargs);
   halt(ret);
 }

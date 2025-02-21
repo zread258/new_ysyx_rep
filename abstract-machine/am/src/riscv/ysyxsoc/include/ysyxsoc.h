@@ -5,6 +5,12 @@
 
 #define ysyxsoc_trap(code) asm volatile("mv a0, %0; ebreak" : :"r"(code))
 
+#define MROM_ORIGIN 0x20000000
+#define MROM_LENGTH 4000
+
+#define SRAM_ORIGIN 0x0f000000
+#define SRAM_LENGTH 8000
+
 #define DEVICE_BASE 0xa0000000
 #define MMIO_BASE 0xa0000000
 

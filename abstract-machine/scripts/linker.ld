@@ -18,10 +18,10 @@ SECTIONS {
   _etext = .;
   .rodata : {
     *(.rodata*)
-  }
+  } > mrom AT> mrom
   .data : {
     *(.data)
-  } > mrom AT> sram : data 
+  } > sram AT> mrom : data 
   edata = .;
   _data = .;
   .bss : {
@@ -30,10 +30,10 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
   }
-  _stack_top = ORIGIN(sram) + LENGTH(sram) - 0x8000; /* 确保栈顶不会超出 sram */
+  _stack_top = 0x0f010000; 
   . = _stack_top + 0x8000;
   _stack_pointer = .;
   end = .;
   _end = .;
-  _heap_start = ORIGIN(sram);
+  _heap_start = ALIGN(0x1000);
 }
