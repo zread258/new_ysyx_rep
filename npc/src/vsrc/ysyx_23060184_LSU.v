@@ -189,6 +189,7 @@ module ysyx_23060184_LSU (
    ); // Why?
 
    ysyx_23060184_LSUXbar LSUXbar (
+      .clk(clk),
       .raddr(ALUResult),
       .lsu_grant(grant),
       .soc_result(soc_result),

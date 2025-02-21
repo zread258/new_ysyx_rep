@@ -12,7 +12,7 @@ config MROM_SIZE
 config SRAM_BASE
   hex "SRAM base address"
   default 0x0        if ISA_x86
-  default 0x0f0000000
+  default 0x0f000000
 
 config SRAM_SIZE
   hex "SRAM size"

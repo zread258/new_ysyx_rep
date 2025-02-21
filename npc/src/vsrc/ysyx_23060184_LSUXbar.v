@@ -1,4 +1,5 @@
 module ysyx_23060184_LSUXbar (
+    input                             clk,
     input [`DATA_WIDTH - 1:0]         raddr,
     input                             lsu_grant,
     input [`DATA_WIDTH - 1:0]         soc_result,
@@ -15,5 +16,16 @@ module ysyx_23060184_LSUXbar (
 
     assign soc = (clint) ? 0 :
                  (lsu_grant) ? 1 : 0; // temporarily use this
+
+    always @ (posedge clk) begin
+        if (soc) begin
+            result <= soc_result;
+        end
+        else if (clint) begin
+            result <= clint_result;
+        end
+    end
+
+    // assign result = (soc) ? soc_result : clint_result;
 
 endmodule

@@ -72,9 +72,6 @@ void diff_step(uint64_t n) {
   s.pc = ref.pc;
   s.snpc = ref.pc;
   for (int i = 0; i < n; i++) {
-    // if (cpu.pc == 0x00000000) {
-    //   printf("Here!\n");
-    // }
     write_back_reg();
     isa_exec_once(&s);
     cpu.pc = s.dnpc;

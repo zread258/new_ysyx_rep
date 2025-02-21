@@ -91,6 +91,14 @@ module ysyx_23060184_SoCMem (
             Mvalid <= 1;
             Mready <= 0;
             Drequest <= 0;
+            // case (ropcode)
+            //     `READ_WORD: result <= rdata;
+            //     `READ_HALF: result <= {{16{rdata[15]}}, rdata[15:0]};
+            //     `READ_BYTE: result <= {{24{rdata[7]}}, rdata[7:0]};
+            //     `READ_HALFU: result <= {16'b0, rdata[15:0]};
+            //     `READ_BYTEU: result <= {24'b0, rdata[7:0]};
+            //     default: result <= 0;
+            // endcase
         end
     end
 

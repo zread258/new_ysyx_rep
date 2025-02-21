@@ -54,14 +54,13 @@ static void exec_once() {
     if (same_inst_clock >= MAX_CLOCKS_PER_INST) {
       sim_break();
       npc_state.state = NPC_ABORT;
+      panic("The instruction is running for too long, maybe it is a bug.");
       return ;
     }
     if (!instr_valid()) {
       old_inst = get_inst();
       continue;
     }
-    // Assert(!abort, "The instruction is running for too long, maybe it is a
-    // bug.");
   }  // multi-cycle instruction support
   step_and_dump_wave();
   same_inst_clock = 0;

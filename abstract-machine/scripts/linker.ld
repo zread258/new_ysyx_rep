@@ -30,8 +30,8 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
   }
-  _stack_top = 0x0f010000; 
-  . = _stack_top + 0x8000;
+  _stack_top = 0x0f000100; 
+  . = _stack_top + 0x100;
   _stack_pointer = .;
   end = .;
   _end = .;
