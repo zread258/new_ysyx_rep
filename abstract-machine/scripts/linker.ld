@@ -10,6 +10,7 @@ SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
   /* Change to VMA & LMA version */
   . = ORIGIN(mrom);
+  _sram_start = ORIGIN(sram);
   .text : {
     *(entry)
     *(.text*)
@@ -20,8 +21,11 @@ SECTIONS {
     *(.rodata*)
   } > mrom AT> mrom
   .data : {
-    *(.data)
-  } > sram AT> mrom : data 
+    vma_data_start = .;
+    *(.data*)
+    vma_data_end = .;
+  } > sram AT> mrom : data
+  lma_data_start = LOADADDR(.data); 
   edata = .;
   _data = .;
   .bss : {
@@ -30,7 +34,7 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
   }
-  _stack_top = 0x0f000100; 
+  _stack_top = ORIGIN(sram) + 0x100; 
   . = _stack_top + 0x100;
   _stack_pointer = .;
   end = .;

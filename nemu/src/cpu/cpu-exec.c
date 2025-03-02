@@ -123,9 +123,6 @@ void cpu_exec(uint64_t n) {
 
   execute(n);
 
-  // Decode s;
-  // trace_and_difftest(&s, cpu.pc);
-
   uint64_t timer_end = get_time();
   g_timer += timer_end - timer_start;
 

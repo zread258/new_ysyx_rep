@@ -11,6 +11,8 @@ module ysyx_23060184_RegMEMWB(
         MEM Stage Signals input Begin
     */
 
+    input           [`DATA_WIDTH - 1:0]         PCM,
+    input           [`DATA_WIDTH - 1:0]         InstM,
     input                                       RegWriteM,
     input                                       CsrWriteM,
     input           [`RESULT_SRC_LENGTH - 1:0]  ResultSrcM,
@@ -30,6 +32,8 @@ module ysyx_23060184_RegMEMWB(
         WB Stage Signals output Begin
     */
 
+    output   reg    [`DATA_WIDTH - 1:0]         PCW,
+    output   reg    [`DATA_WIDTH - 1:0]         InstW,
     output   reg                                RegWriteW,
     output   reg                                CsrWriteW,
     output   reg    [`RESULT_SRC_LENGTH - 1:0]  ResultSrcW,
@@ -47,6 +51,8 @@ module ysyx_23060184_RegMEMWB(
 
     always @(posedge clk) begin
         if (~resetn) begin
+            PCW <= 0;
+            InstW <= 0;
             RegWriteW <= 0;
             ResultSrcW <= 0;
             PCPlus4W <= 0;
@@ -56,6 +62,8 @@ module ysyx_23060184_RegMEMWB(
             RdW <= 0;
             CsrAddrW <= 0;
         end else if (Mvalid && Wready) begin
+            PCW <= PCM;
+            InstW <= InstM;
             RegWriteW <= RegWriteM;
             ResultSrcW <= ResultSrcM;
             PCPlus4W <= PCPlus4M;

@@ -51,7 +51,6 @@ void diff_set_regs(void* diff_context) {
     cpu.gpr[i] = (sword_t)ctx->gpr[i];
   }
   if (ctx->pc != 0x00000000) cpu.pc = ctx->pc;
-  // printf("diff_set_regs_pc = %x\n", cpu.pc);
 }
 
 void diff_get_regs(void* diff_context) {
@@ -72,8 +71,8 @@ void diff_step(uint64_t n) {
   s.pc = ref.pc;
   s.snpc = ref.pc;
   for (int i = 0; i < n; i++) {
-    write_back_reg();
     isa_exec_once(&s);
+    write_back_reg();
     cpu.pc = s.dnpc;
   }
 }
@@ -94,7 +93,6 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
   if (direction == DIFFTEST_TO_REF) {
     diff_set_regs(dut);
   } else {
-    // printf("(nemu side) address of dut = %p\n", dut);
     diff_get_regs(dut);
   }
 }

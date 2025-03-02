@@ -42,7 +42,7 @@ module ysyx_23060184_RegFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32) (
 
   /* ================Write Handshake and Transaction Section================ */
 
-  always @(posedge clk) begin
+  always @(negedge clk) begin
     if (Wvalid) begin // Warning: Change Pready to Iready, to be tested
       if (wen && waddr != 5'b00000) begin
         rf[waddr] <= wdata;

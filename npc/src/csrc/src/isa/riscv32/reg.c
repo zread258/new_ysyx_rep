@@ -24,8 +24,12 @@ bool inst_complete() {
   return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Wvalid;
 }
 
-bool instr_valid() {
-  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Ivalid;
+// bool instr_valid() {
+//   return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Ivalid;
+// }
+
+bool cpu_Wvalid() {
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Wvalid;
 }
 
 void update_cpu_reg() {

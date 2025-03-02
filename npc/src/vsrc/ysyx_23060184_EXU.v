@@ -88,7 +88,7 @@ module ysyx_23060184_EXU (
     wire [`DATA_WIDTH - 1:0] SrcA, SrcB;
     wire [`DATA_WIDTH - 1:0] FwdRD1E, FwdRD2E;
 
-    assign WriteData = RD2;
+    assign WriteData = FwdRD2E;
 
     ysyx_23060184_Mux_RD1E Mux_RD1E (
         .ForwardAE(ForwardAE),

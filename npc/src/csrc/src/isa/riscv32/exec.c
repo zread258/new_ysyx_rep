@@ -65,11 +65,11 @@ void machine_init() {
 }
 
 word_t get_curpc() {
-  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCF;
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__PCW;
 }
 
 word_t get_inst() {
-  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__InstF;
+  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__InstW;
 }
 
 extern "C" void sim_break() {

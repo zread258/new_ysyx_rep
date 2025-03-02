@@ -19,15 +19,15 @@
 void difftest_step(vaddr_t pc, vaddr_t npc);
 void device_update();
 bool check_wp();
-bool instr_valid();
+// bool instr_valid();
+bool cpu_Wvalid();
 void sdb_mainloop();
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0;  // unit: us
 static bool g_print_step = false;
-word_t old_inst = 0;
-bool start = false;
+// bool start = false;
 word_t same_inst_clock = 0;
 #define MAX_CLOCKS_PER_INST 200
 
@@ -47,9 +47,9 @@ static void trace_and_difftest() {
 }
 
 static void exec_once() {
-  while (old_inst == get_inst()) {
+  // while (old_inst == get_inst()) {
+  while (!cpu_Wvalid()) {
     step_and_dump_wave();
-    cpu.pc = get_curpc();
     same_inst_clock++;
     if (same_inst_clock >= MAX_CLOCKS_PER_INST) {
       sim_break();
@@ -57,23 +57,20 @@ static void exec_once() {
       panic("The instruction is running for too long, maybe it is a bug.");
       return ;
     }
-    if (!instr_valid()) {
-      old_inst = get_inst();
-      continue;
-    }
+    // if (!instr_valid()) {
+    //   old_inst = get_inst();
+    //   continue;
+    // }
   }  // multi-cycle instruction support
+  cpu.pc = get_curpc();
   step_and_dump_wave();
   same_inst_clock = 0;
-  if (cpu.pc != 0) start = true;  // start to update cpu reg
-  old_inst = get_inst();
-  if (start) update_cpu_reg();
+  // if (cpu.pc != 0) start = true;  // start to update cpu reg
+  update_cpu_reg();
 #ifdef CONFIG_ITRACE
   char *log = (char *)malloc(1024);
   char *p = log;
-  p += snprintf(p, 16,
-                "0x%08x"
-                ":",
-                cpu.pc);
+  p += snprintf(p, 16, "0x%08x" ":", cpu.pc);
   int ilen = 4;
   int i;
   word_t cur_inst = get_inst();
@@ -107,7 +104,7 @@ static void exec_once() {
 static void execute(uint64_t n) {
   for (; n > 0; n--) {
     exec_once();
-    if (start) trace_and_difftest();
+    trace_and_difftest();
     if (npc_state.state != NPC_RUNNING) break;
     IFDEF(CONFIG_DEVICE, device_update());
   }

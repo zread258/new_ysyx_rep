@@ -11,12 +11,12 @@ module ysyx_23060184_HazardUnit(
     output                              Branch
 );
 
-   assign ForwardAE = (RegWriteM & (Rs1E != 0) & (Rs1E == RdM)) ? `FWDA_MUX_ALURESULTM :
-                      (RegWriteW & (Rs1E != 0) & (Rs1E == RdW)) ? `FWDA_MUX_RESULTW :
+   assign ForwardAE = (RegWriteW & (Rs1E != 0) & (Rs1E == RdW)) ? `FWDA_MUX_RESULTW :
+                      (RegWriteM & (Rs1E != 0) & (Rs1E == RdM)) ? `FWDA_MUX_ALURESULTM :
                       `FWDA_MUX_RD1E; 
 
-   assign ForwardBE = (RegWriteM & (Rs2E != 0) & (Rs2E == RdM)) ? `FWDB_MUX_ALURESULTM :
-                      (RegWriteW & (Rs2E != 0) & (Rs2E == RdW)) ? `FWDB_MUX_RESULTW :
+   assign ForwardBE = (RegWriteW & (Rs2E != 0) & (Rs2E == RdW)) ? `FWDB_MUX_RESULTW :
+                      (RegWriteM & (Rs2E != 0) & (Rs2E == RdM)) ? `FWDB_MUX_ALURESULTM :
                       `FWDB_MUX_RD2E; 
 
     assign Branch = (PCSrcE == `PC_SRC_PCPlus4) ? 0 : 1;
