@@ -21,6 +21,7 @@
 #define MROM_LEFT  ((paddr_t)CONFIG_MROM_BASE)
 #define MROM_RIGHT ((paddr_t)CONFIG_MROM_BASE + CONFIG_MROM_SIZE - 1)
 #define SRAM_LEFT  ((paddr_t)CONFIG_SRAM_BASE)
+#define UART_ADDR  0x10000000
 #define SRAM_RIGHT ((paddr_t)CONFIG_SRAM_BASE + CONFIG_SRAM_SIZE - 1)
 #define RESET_VECTOR (MROM_LEFT + CONFIG_PC_RESET_OFFSET)
 
@@ -31,10 +32,11 @@ paddr_t host_to_guest(uint8_t *haddr);
 
 static inline bool addr_is_rom(paddr_t addr) { return addr >= MROM_LEFT && addr <= MROM_RIGHT; }
 static inline bool addr_is_sram(paddr_t addr) { return addr >= SRAM_LEFT && addr <= SRAM_RIGHT; }
+static inline bool addr_is_uart(paddr_t addr) { return addr == UART_ADDR; }
 
 static inline bool in_pmem(paddr_t addr) {
   // return addr - CONFIG_MBASE < CONFIG_MSIZE;
-  return addr_is_rom(addr) || addr_is_sram(addr);
+  return addr_is_rom(addr) || addr_is_sram(addr) || addr_is_uart(addr);
 }
 
 word_t paddr_read(paddr_t addr, int len);

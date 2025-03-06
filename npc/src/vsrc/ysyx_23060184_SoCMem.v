@@ -78,6 +78,10 @@ module ysyx_23060184_SoCMem (
     /*
         SoC AXI4 Transaction Begin
     */
+
+    import "DPI-C" function void is_device(
+    input int raddr, input byte grant, input byte MemRead, input byte MemWrite);
+
     always @(posedge clk) begin
         if (MemRead && grant && arvalid && arready) begin
             arvalid <= 0;
@@ -91,14 +95,6 @@ module ysyx_23060184_SoCMem (
             Mvalid <= 1;
             Mready <= 0;
             Drequest <= 0;
-            // case (ropcode)
-            //     `READ_WORD: result <= rdata;
-            //     `READ_HALF: result <= {{16{rdata[15]}}, rdata[15:0]};
-            //     `READ_BYTE: result <= {{24{rdata[7]}}, rdata[7:0]};
-            //     `READ_HALFU: result <= {16'b0, rdata[15:0]};
-            //     `READ_BYTEU: result <= {24'b0, rdata[7:0]};
-            //     default: result <= 0;
-            // endcase
         end
     end
 
@@ -115,12 +111,6 @@ module ysyx_23060184_SoCMem (
             wvalid <= 0;
             wlast <= 0;
             bready <= 1;
-            // if (bvalid && bready) begin
-            //     bready <= 0;
-            // end
-            // Mvalid <= 1;
-            // Mready <= 0;
-            // Drequest <= 0;
         end
     end
 

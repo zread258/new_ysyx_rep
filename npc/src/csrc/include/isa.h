@@ -18,6 +18,7 @@
 // The macro `__GUEST_ISA__` is defined in $(CFLAGS).
 // It will be expanded as "x86" or "mips32" ...
 typedef concat(riscv32, _CPU_state) CPU_state;
+typedef concat(riscv32, _ISADecodeInfo) ISADecodeInfo;
 // typedef concat(__GUEST_ISA__, _ISADecodeInfo) ISADecodeInfo;
 
 // typedef uint32_t word_t;
@@ -46,7 +47,7 @@ void machine_init();
 extern "C" void sim_break();
 extern "C" int pmem_read(int raddr);
 struct Decode;
-int isa_exec_once(struct Decode *s);
+void isa_exec_once(uint32_t inst);
 
 // memory
 // enum { MMU_DIRECT, MMU_TRANSLATE, MMU_FAIL };

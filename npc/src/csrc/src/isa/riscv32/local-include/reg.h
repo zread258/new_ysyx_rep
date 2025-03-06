@@ -17,6 +17,7 @@
 #define __RISCV_REG_H__
 
 #include <common.h>
+#include <isa.h>
 
 #include "VysyxSoCFull___024root.h"
 

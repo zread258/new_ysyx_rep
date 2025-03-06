@@ -47,7 +47,6 @@ static void trace_and_difftest() {
 }
 
 static void exec_once() {
-  // while (old_inst == get_inst()) {
   while (!cpu_Wvalid()) {
     step_and_dump_wave();
     same_inst_clock++;
@@ -57,25 +56,21 @@ static void exec_once() {
       panic("The instruction is running for too long, maybe it is a bug.");
       return ;
     }
-    // if (!instr_valid()) {
-    //   old_inst = get_inst();
-    //   continue;
-    // }
   }  // multi-cycle instruction support
   cpu.pc = get_curpc();
   step_and_dump_wave();
   same_inst_clock = 0;
-  // if (cpu.pc != 0) start = true;  // start to update cpu reg
   update_cpu_reg();
-#ifdef CONFIG_ITRACE
+  sword_t cur_inst = get_inst();
+  if (cur_inst == 0x00100073) npc_state.state = NPC_END;
+  isa_exec_once(cur_inst);
+  #ifdef CONFIG_ITRACE
   char *log = (char *)malloc(1024);
   char *p = log;
   p += snprintf(p, 16, "0x%08x" ":", cpu.pc);
   int ilen = 4;
   int i;
-  word_t cur_inst = get_inst();
   uint8_t *inst = (uint8_t *)(&cur_inst);
-  if (cur_inst == 0x00100073) npc_state.state = NPC_END;
   for (i = ilen - 1; i >= 0; i--) {
     p += snprintf(p, 4, " %02x", inst[i]);
   }
