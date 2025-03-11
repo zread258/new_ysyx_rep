@@ -19,7 +19,6 @@
 void difftest_step(vaddr_t pc, vaddr_t npc);
 void device_update();
 bool check_wp();
-// bool instr_valid();
 bool cpu_Wvalid();
 void sdb_mainloop();
 
@@ -30,6 +29,7 @@ static bool g_print_step = false;
 // bool start = false;
 word_t same_inst_clock = 0;
 #define MAX_CLOCKS_PER_INST 200
+#define EBREAK 0x00100073
 
 bool check_wp();
 
@@ -57,12 +57,12 @@ static void exec_once() {
       return ;
     }
   }  // multi-cycle instruction support
+  sword_t cur_inst = get_inst();
+  if (cur_inst == EBREAK) npc_state.state = NPC_END;
   cpu.pc = get_curpc();
   step_and_dump_wave();
   same_inst_clock = 0;
   update_cpu_reg();
-  sword_t cur_inst = get_inst();
-  if (cur_inst == 0x00100073) npc_state.state = NPC_END;
   isa_exec_once(cur_inst);
   #ifdef CONFIG_ITRACE
   char *log = (char *)malloc(1024);
@@ -90,10 +90,7 @@ static void exec_once() {
   p[0] = '\0';  // the upstream llvm does not support loongarch32r
 #endif
 
-#else
-  word_t cur_inst = get_inst();
-  if (cur_inst == 0x00100073) npc_state.state = NPC_END;
-#endif
+  #endif
 }
 
 static void execute(uint64_t n) {
@@ -118,8 +115,6 @@ void cpu_exec(uint64_t n) {
   }
 
   execute(n);
-
-  // trace_and_difftest();
 
   switch (npc_state.state) {
     case NPC_RUNNING:

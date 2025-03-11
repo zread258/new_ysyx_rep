@@ -31,15 +31,15 @@ const char *regs_name[] = {
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   int reg_num = ARRLEN(cpu.gpr);
+  if (ref_r->pc != cpu.pc) {
+    Log("\nref->pc is at " FMT_WORD " while npc->pc is at " FMT_WORD, ref_r->pc, cpu.pc);
+    return false;
+  }
   for (int i = 0; i < reg_num; i++) {
     if (ref_r->gpr[i] != cpu.gpr[i]) {
       Log("\nreg[%d](%s) is different at pc = " FMT_WORD "\nref = " FMT_WORD "\ndut = " FMT_WORD, i, regs_name[i], pc, ref_r->gpr[i], cpu.gpr[i]);
       return false;
     }
-  }
-  if (ref_r->pc != cpu.pc) {
-    Log("\nref->pc is at " FMT_WORD " while npc->pc is at " FMT_WORD, ref_r->pc, cpu.pc);
-    return false;
   }
   return true;
 }
@@ -146,23 +146,14 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 
   if (is_skip_ref) {
     // to skip the checking of an instruction, just copy the reg state to reference design
+    cpu.pc += 4; // if skip once, it must be memory-related instruction, so it must be in order!
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
     is_skip_ref = false;
     return;
   }
-  // printf("(npc side) BEFORE ref_r.pc = " FMT_WORD "\n", ref_r.pc);
 
   ref_difftest_exec(1);
-
-  // printf("(npc side) BEFORE ref_r.pc = " FMT_WORD "\n", ref_r.pc);
-
-  // printf("(npc side) address of ref_r.pc = %p\n", &(ref_r.pc));
-
   ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-
-  // printf("(npc side) regcpy!\n");
-
-  // printf("(npc side) AFTER  ref_r.pc = " FMT_WORD "\n", ref_r.pc);
 
   checkregs(&ref_r, pc);
 }

@@ -14,21 +14,25 @@ static uint8_t mrom[CONFIG_MROM_SIZE] PG_ALIGN = {};
 static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
 
 // static const uint32_t img [] = {
-//   0x00000297,  // auipc t0,0
-//   0x00028823,  // sb  zero,16(t0)
-//   0x0102c503,  // lbu a0,16(t0)
+//   0xef000117,  // auipc	sp,0xef000
+//   0x1fc10113,  // add	sp,sp,508 # f000200 <_end>
+//   0xff410113,  // add	sp,sp,-12
+//   0x01e10093,  // add ra,sp,30
+//   0x00112423,  // sw	ra,8(sp)
+//   0x00812783,  // lw  a5,8(sp)
 //   0x00100073,  // ebreak (used as npc_trap)
 //   0xdeadbeef,  // some data
   
 // };
 
 static const uint32_t img [] = {
-  0xef000117,  // auipc	sp,0xef000
-  0x1fc10113,  // add	sp,sp,508 # f000200 <_end>
-  0xff410113,  // add	sp,sp,-12
-  0x01e10093,  // add ra,sp,30
-  0x00112423,  // sw	ra,8(sp)
-  0x00812783,  // lw  a5,8(sp)
+  0x00000597,  // auipc	sp,0xef000
+  0x1fc50513,  // add	sp,sp,508 # f000200 <_end>
+  0xef000117,  // add	sp,sp,-12
+  0x00a12023,  // add ra,sp,30
+  0x00012603,  // sw	ra,8(sp)
+  0x00a61463,  // lw  a5,8(sp)
+  0xfe9ff06f,
   0x00100073,  // ebreak (used as npc_trap)
   0xdeadbeef,  // some data
   

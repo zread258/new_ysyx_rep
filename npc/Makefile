@@ -4,7 +4,7 @@ INC_PATH += /home/csardas/ysyx-workbench/npc/include
 INC_PATH += /home/csardas/ysyx-workbench/npc/build/obj_dir
 INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip
 # INC_PATH += $(NPC_HOME)/src/csrc/src/isa/riscv32/include
-INC_PATH += /usr/lib/llvm-11/include
+INC_PATH += /usr/local/llvm-16/include
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc -trace \
@@ -36,6 +36,7 @@ CSRCS = $(shell find $(abspath ./src/csrc) -name "*.c" -or -name "*.cc" \
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -std=c++17
 
 # Extract compiler and options from menuconfig
 CC = $(call remove_quote,$(CONFIG_CC))
@@ -45,9 +46,11 @@ CFLAGS_BUILD += $(if $(CONFIG_CC_DEBUG),-Og -ggdb3,)
 CFLAGS_BUILD += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
 CFLAGS_TRACE += -DITRACE_COND=$(if $(CONFIG_ITRACE_COND),$(call remove_quote,$(CONFIG_ITRACE_COND)),true)
 CFLAGS  += $(CFLAGS_BUILD) $(CFLAGS_TRACE) -D__GUEST_ISA__=$(GUEST_ISA)
+CFLAGS += -std=c++17
 LDFLAGS += $(CFLAGS_BUILD)
+LDFLAGS += -L/usr/local/lib
 LDFLAGS += -lreadline
-LDFLAGS += -lLLVM-11
+LDFLAGS += -lLLVM-16
 LDFLAGS += -ldl
 LDFLAGS += -lSDL2
 

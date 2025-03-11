@@ -79,9 +79,6 @@ module ysyx_23060184_SoCMem (
         SoC AXI4 Transaction Begin
     */
 
-    import "DPI-C" function void is_device(
-    input int raddr, input byte grant, input byte MemRead, input byte MemWrite);
-
     always @(posedge clk) begin
         if (MemRead && grant && arvalid && arready) begin
             arvalid <= 0;

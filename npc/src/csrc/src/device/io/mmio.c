@@ -1,20 +1,12 @@
 /***************************************************************************************
-* Copyright (c) 2014-2022 Zihao Yu, Nanjing University
-*
-* NEMU is licensed under Mulan PSL v2.
-* You can use this software according to the terms and conditions of the Mulan PSL v2.
-* You may obtain a copy of Mulan PSL v2 at:
-*          http://license.coscl.org.cn/MulanPSL2
-*
-* THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-* EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-* MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-*
-* See the Mulan PSL v2 for more details.
+* Copyright (c) 2023-2024 modified by Ruidong Zhang
+* Thanks to Zihao Yu from Nanjing University 
+* and YSYX-project group
 ***************************************************************************************/
 
 #include <device/map.h>
 #include <memory/paddr.h>
+#include <cpu/difftest.h>
 
 #define NR_MAP 16
 
@@ -57,9 +49,12 @@ void add_mmio_map(const char *name, paddr_t addr, void *space, uint32_t len, io_
 
 /* bus interface */
 word_t mmio_read(paddr_t addr, int len) {
-  return map_read(addr, len, fetch_mmio_map(addr));
+  // return map_read(addr, len, fetch_mmio_map(addr));
+  difftest_skip_ref();
+  return 0;
 }
 
 void mmio_write(paddr_t addr, int len, word_t data) {
-  map_write(addr, len, data, fetch_mmio_map(addr));
+  // map_write(addr, len, data, fetch_mmio_map(addr));
+  difftest_skip_ref();
 }

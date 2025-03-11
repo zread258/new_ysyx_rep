@@ -18,17 +18,8 @@ int main(int argc, char *argv[]) {
 
   init_monitor(argc, argv);
 
-  // step_and_dump_wave();
-
-  // printf("inst = 0x%x\n", get_inst());
-
   sdb_mainloop();
 
-  // while (1) {
-    // if (flag) {
-    //   break;
-    // }
-    // step_and_dump_wave();
-  // }
-  
+  return 0;
+
 }

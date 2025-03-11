@@ -117,6 +117,15 @@ module ysyx_23060184_LSU (
         if (idle && grant && MemRead) begin
             arvalid <= 1;
             idle <= 0;
+            if (Ropcode == `READ_WORD) begin
+                arsize <= 3'b010;
+            end else if (Ropcode == `READ_BYTE 
+                        || Ropcode == `READ_BYTEU) begin
+                arsize <= 3'b000;
+            end else if (Ropcode == `READ_HALF 
+                        || Ropcode == `READ_HALFU) begin
+                arsize <= 3'b001;
+            end
         end
         else if (idle && grant && MemWrite) begin
             awvalid <= 1;

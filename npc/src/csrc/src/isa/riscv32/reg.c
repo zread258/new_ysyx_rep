@@ -20,14 +20,6 @@ const char *regs[] = {
 
 #define NR_GPR MUXDEF(CONFIG_RVE, 16, 32)
 
-bool inst_complete() {
-  return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Wvalid;
-}
-
-// bool instr_valid() {
-//   return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Ivalid;
-// }
-
 bool cpu_Wvalid() {
   return dut->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__Wvalid;
 }

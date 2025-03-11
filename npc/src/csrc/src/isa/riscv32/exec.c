@@ -98,13 +98,6 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   paddr_write(waddr, len, wdata);
 }
 
-extern "C" bool is_device(int32_t raddr, int8_t grant, int8_t MemRead, int8_t MemWrite) {
-  if (!in_pmem(raddr) && grant && (MemRead || MemWrite)) {
-    return true;
-  }
-  return false;
-}
-
 extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 

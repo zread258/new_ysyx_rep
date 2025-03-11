@@ -42,7 +42,6 @@ static void write_back_reg() {
     ref.gpr[i] = cpu.gpr[i];
   }
   ref.pc = cpu.pc;
-  // printf("(nemu side)cpu.pc = 0x%x\nref.pc = 0x%x\n", cpu.pc, ref.pc);
 }
 
 void diff_set_regs(void* diff_context) {
@@ -55,14 +54,10 @@ void diff_set_regs(void* diff_context) {
 
 void diff_get_regs(void* diff_context) {
   struct diff_context_t* ctx = (struct diff_context_t*)diff_context;
-  // printf("(nemu side) sizeof(ctx) = %ld\n", sizeof(ctx));
-  // printf("(nemu side) BEFORE ctx->pc = 0x%08x\n", ctx->pc);
   for (int i = 0; i < NR_GPR; i++) {
     ctx->gpr[i] = ref.gpr[i];
   }
-  // printf("(nemu side) address of ctx->pc = %p\n", &(ctx->pc));
   ctx->pc = ref.pc;
-  // printf("(nemu side) AFTER ctx->pc = 0x%x\n", ctx->pc);
 }
 
 void diff_step(uint64_t n) {
@@ -111,6 +106,4 @@ __EXPORT void difftest_init(int port) {
   /* Perform ISA dependent initialization. */
   init_isa();
   ref_init();
-  // printf("difftest_init\n");
-  // printf("cpu.pc = 0x%x\n", cpu.pc);
 }

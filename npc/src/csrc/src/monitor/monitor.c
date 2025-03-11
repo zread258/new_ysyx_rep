@@ -115,7 +115,6 @@ void init_monitor(int argc, char *argv[]) {
   IFDEF(CONFIG_DEVICE, init_device());
 
   /* Perform ISA dependent initialization. */
-  // init_isa();
   sim_init();
   machine_init();
 
@@ -157,7 +156,6 @@ void init_monitor(int argc, char *argv[]) {
 void am_init_monitor() {
   // init_rand();
   init_mem();
-  // init_isa();
   load_img();
   IFDEF(CONFIG_DEVICE, init_device());
   welcome();
