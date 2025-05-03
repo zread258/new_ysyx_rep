@@ -144,8 +144,8 @@
 `define RESULT_SRC_LENGTH  3           // Bits of signal RegSrc
 `define RESULT_SRC_DEFAULT 3'b000      // Register default value
 `define RESULT_SRC_ALU     3'b001      // Register write source: ALU
-`define RESULT_SRC_MEM     3'b010      // Register write source: Immidiate Extension
-`define RESULT_SRC_PCPlus4 3'b011      // Register write source: NPC
+`define RESULT_SRC_MEM     3'b010      // Register write source: MEM 
+`define RESULT_SRC_PCPlus4 3'b011      // Register write source: PCPlus4
 `define RESULT_SRC_CSR     3'b100      // Register write source: CSR
 // `define RESULT_SRC_MEM     2'b10      // Register write source: Data Memory
 
@@ -170,15 +170,15 @@
 `define PC_SRC_LENGTH   2          // Bits of PCSrc
 // `define PC_SRC_DEFAULT  3'b000     // PCSrc default value
 `define PC_SRC_PCPlus4  2'b01     // Next instruction: normal
-`define PC_SRC_PCTarget 2'b10     // Next instruction: JAL
+`define PC_SRC_PCTarget 2'b10     // Next instruction: JAL/Branch
 `define PC_SRC_ALU      2'b11     // Next instruction: JALR
 `define PC_SRC_CSRREAD  2'b00     // Next instruction: BEQ
 
 // DataMem WriteMask Signals
-`define WMASK_LENGTH    8
-`define WRITE_WORD      8'h0f
-`define WRITE_HALF      8'h03
-`define WRITE_BYTE      8'h01
+`define WMASK_LENGTH    4
+`define WRITE_WORD      4'b1111
+`define WRITE_HALF      4'b0011
+`define WRITE_BYTE      4'b0001
 
 // DataMem ReadMask Signals
 `define ROPCODE_LENGTH  3
@@ -235,5 +235,10 @@
 `define ID_WIDTH    4
 `define ALEN        8
 `define ASIZE       3
+`define ASIZE_BYTE  3'b000
+`define ASIZE_HALF  3'b001
+`define ASIZE_WORD  3'b010
 `define ABURST      2
 `define WSTRB_WIDTH 4
+
+`define INST_NOP    32'h00000013

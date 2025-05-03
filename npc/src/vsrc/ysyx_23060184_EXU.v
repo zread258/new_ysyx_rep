@@ -2,6 +2,7 @@ module ysyx_23060184_EXU (
 
     input                               clk,
     input                               rstn,
+    input                               Stall,
     input                               Dvalid,
     input                               Mready,
 
@@ -124,6 +125,7 @@ module ysyx_23060184_EXU (
     ysyx_23060184_ALU ALU (
         .clk(clk),
         .rstn(rstn),
+        .Stall(Stall),
         .Dvalid(Dvalid),
         .Mready(Mready),
         .SrcA(SrcA),

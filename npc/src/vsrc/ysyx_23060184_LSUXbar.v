@@ -26,6 +26,4 @@ module ysyx_23060184_LSUXbar (
         end
     end
 
-    // assign result = (soc) ? soc_result : clint_result;
-
 endmodule

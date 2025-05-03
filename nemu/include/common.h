@@ -31,9 +31,9 @@
 #include <stdlib.h>
 #endif
 
-#if CONFIG_MBASE + CONFIG_MSIZE > 0x100000000ul
-#define PMEM64 1
-#endif
+// #if CONFIG_MBASE + CONFIG_MSIZE > 0x100000000ul
+// #define PMEM64 1
+// #endif
 
 typedef MUXDEF(CONFIG_ISA64, uint64_t, uint32_t) word_t;
 typedef MUXDEF(CONFIG_ISA64, int64_t, int32_t)  sword_t;

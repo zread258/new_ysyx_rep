@@ -28,8 +28,6 @@ static uint64_t g_timer = 0;  // unit: us
 static bool g_print_step = false;
 // bool start = false;
 word_t same_inst_clock = 0;
-#define MAX_CLOCKS_PER_INST 200
-#define EBREAK 0x00100073
 
 bool check_wp();
 
@@ -71,6 +69,9 @@ static void exec_once() {
   int ilen = 4;
   int i;
   uint8_t *inst = (uint8_t *)(&cur_inst);
+  if (cur_inst == NOP) {
+    p += sprintf(p, "\033[31m%s\033[0m", " nop");
+  }
   for (i = ilen - 1; i >= 0; i--) {
     p += snprintf(p, 4, " %02x", inst[i]);
   }

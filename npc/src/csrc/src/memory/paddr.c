@@ -26,6 +26,12 @@ static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
 // };
 
 static const uint32_t img [] = {
+  0xef000117, // auipc	sp,0xef000
+  0x1fc10113, // add sp, sp, 508   # f000200
+  0xff010113, // add	sp,sp,-16
+  0x0aa00793, // addi a5,zero,170
+  0x00f11023, // sw	a5,0x0(sp)
+  0x00114783, // lbu	a5,0x1(sp)
   0x00000597,  // auipc	sp,0xef000
   0x1fc50513,  // add	sp,sp,508 # f000200 <_end>
   0xef000117,  // add	sp,sp,-12

@@ -2,6 +2,7 @@ module ysyx_23060184_IDU (
 
     input                               clk,
     input                               rstn,
+    input                               Stall,
     input [`DATA_WIDTH - 1:0]           inst,
 
 
@@ -52,6 +53,8 @@ module ysyx_23060184_IDU (
     output                              MemRead,
     output                              MemWrite,
     output                              CsrWriteD,
+    output                              Rs2Valid,
+    output                              JumpBranch,
     output [`WMASK_LENGTH - 1:0]        Wmask,
     output [`ROPCODE_LENGTH - 1:0]      Ropcode,
     output [`RESULT_SRC_LENGTH - 1:0]   ResultSrc,
@@ -68,10 +71,10 @@ module ysyx_23060184_IDU (
         RegFile Output Signals Begin
     */
 
-    output                              Dvalid,
-    output                              Dready,
-    output [`DATA_WIDTH-1:0]            RD1,
-    output [`DATA_WIDTH-1:0]            RD2,
+    output reg                          Dvalid,
+    output reg                          Dready,
+    output reg [`DATA_WIDTH-1:0]        RD1,
+    output reg [`DATA_WIDTH-1:0]        RD2,
 
     /*
         RegFile Output Signals End
@@ -103,6 +106,23 @@ module ysyx_23060184_IDU (
 
     assign CsrAddrD = inst[29:20];
 
+    always @(posedge clk) begin
+        if (~rstn) begin
+            Dready <= 1;
+        end
+    end
+
+    always @(posedge clk) begin
+        if (Dready && Ivalid) begin
+            Dready <= 0;
+            Dvalid <= 1;
+        end
+        if (Dvalid && Eready && ~Stall) begin
+            Dvalid <= 0;
+            Dready <= 1;
+        end
+    end
+
     ysyx_23060184_Decode Deocde (
       .clk(clk),
       .inst(inst)
@@ -131,7 +151,9 @@ module ysyx_23060184_IDU (
       .MemWrite(MemWrite),
       .CsrWrite(CsrWriteD),
       .Ecall(Ecall),
-      .Mret(Mret)
+      .Mret(Mret),
+      .Rs2Valid(Rs2Valid),
+      .JumpBranch(JumpBranch)
    );
 
    ysyx_23060184_RegFile RegFile (
@@ -144,11 +166,7 @@ module ysyx_23060184_IDU (
       .raddr2(inst[24:20]),
       .rdata1(RD1),
       .rdata2(RD2),
-      .Ivalid(Ivalid),
       .Wvalid(Wvalid),
-      .Eready(Eready),
-      .Dvalid(Dvalid),
-      .Dready(Dready),
       .ecall(Ecall)
    );
 

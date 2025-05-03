@@ -76,7 +76,6 @@ module ysyx_23060184 (
     wire                     resetn;
     assign resetn            = ~reset;
 
-    wire                     Pready;
     wire                     Ivalid;
     wire                     Dvalid;
     wire                     Dready;
@@ -100,22 +99,13 @@ module ysyx_23060184 (
     wire [`DATA_WIDTH - 1:0] PCF, InstF, PCPlus4F;
     wire ifu_grant, lsu_grant;
 
-    wire Branch;
+    wire Branch, LoadStall;
 
     /*
       IFU related AXI4 signals Begin
    */
 
     wire [  `DATA_WIDTH - 1:0] ifu_araddr;
-    // wire                       d_arvalid;
-    // wire                       d_rready;
-    // wire [  `DATA_WIDTH - 1:0] d_awaddr;
-    // wire                       d_awvalid;
-    // wire [  `DATA_WIDTH - 1:0] d_wdata;
-    // wire [`WMASK_LENGTH - 1:0] d_wstrb;
-    // wire                       d_wvalid;
-    // wire                       d_bready;
-
     /*
       IFU related AXI4 signals End
    */
@@ -124,7 +114,8 @@ module ysyx_23060184 (
         .clk(clock),
         .rstn(resetn),
         .Branch(Branch),
-        // .Stall(StallF),
+        .Stall(StallF),
+        .ControlStall(ControlStall),
         .PCSrc(PCSrcE),
         .PCTarget(PCTargetE),
         .ALUResult(ALUResultE),
@@ -136,7 +127,6 @@ module ysyx_23060184 (
         .rresp(io_master_rresp),
         .rvalid(io_master_rvalid),
         .rlast(io_master_rlast),
-        .Pready(Pready),
         .pc(PCF),
         .araddr(ifu_araddr),
         .arvalid(io_master_arvalid),
@@ -152,30 +142,46 @@ module ysyx_23060184 (
     );
 
     wire [`DATA_WIDTH - 1:0] PCD, PCPlus4D, InstD;
-    // wire FlushD;
-    wire StallF;
+    wire FlushD, FlushE;
+    wire StallF, StallD, StallE;
+    wire JumpBranch, ControlStall;
 
     ysyx_23060184_HazardUnit HazardUnit (
+      .Rs1D(Rs1D),
+      .Rs2D(Rs2D),
       .Rs1E(Rs1E),
       .Rs2E(Rs2E),
+      .RdE(RdE),
       .RdM(RdM),
       .RdW(RdW),
       .RegWriteM(RegWriteM),
       .RegWriteW(RegWriteW),
+      .Rs2DValid(Rs2DValid),
+      .JumpBranch(JumpBranch),
       .PCSrcE(PCSrcE),
+      .ResultSrcE(ResultSrcE),
+      .ResultSrcM(ResultSrcM),
+      .StallF(StallF),
+      .StallD(StallD),
+      .StallE(StallE),
+      .FlushD(FlushD),
+      .FlushE(FlushE),
       .ForwardAE(ForwardAE),
       .ForwardBE(ForwardBE),
-      // .StallF(StallF),
-      // .FlushD(FlushD),
-      .Branch(Branch)
+      .Branch(Branch),
+      .ControlStall(ControlStall),
+      .LoadStall(LoadStall)
     );
 
     ysyx_23060184_RegIFID RegIFID (
         .clk(clock),
         .rstn(resetn),
         // .clr(FlushD),
+        .Stall(StallD),
         .Ivalid(Ivalid),
         .Dready(Dready),
+        .Dvalid(Dvalid),
+        .Eready(Eready),
         .InstF(InstF),
         .PCPlus4F(PCPlus4F),
         .PCF(PCF),
@@ -185,7 +191,7 @@ module ysyx_23060184 (
     );
 
     wire JalD, JalrD, BeqD, BneD, BltsuD, BgesuD, EcallD, MretD;
-    wire RegWriteD, MemReadD, MemWriteD, CsrWriteD;
+    wire RegWriteD, MemReadD, MemWriteD, CsrWriteD, Rs2DValid;
     wire [     `WMASK_LENGTH - 1:0] WmaskD;
     wire [   `ROPCODE_LENGTH - 1:0] RopcodeD;
     wire [`RESULT_SRC_LENGTH - 1:0] ResultSrcD;
@@ -198,6 +204,7 @@ module ysyx_23060184 (
     ysyx_23060184_IDU IDU (
         .clk(clock),
         .rstn(resetn),
+        .Stall(StallD),
         .inst(InstD),
         .PCPlus4(PCPlus4W),
         .Result(ResultW),
@@ -233,7 +240,9 @@ module ysyx_23060184 (
         .RD1(RD1D),
         .RD2(RD2D),
         .ImmExt(ImmExtD),
-        .CsrRead(CsrReadD)
+        .CsrRead(CsrReadD),
+        .Rs2Valid(Rs2DValid),
+        .JumpBranch(JumpBranch)
     );
 
     wire JalE, JalrE, BeqE, BneE, BltsuE, BgesuE, EcallE, MretE;
@@ -245,14 +254,23 @@ module ysyx_23060184 (
     wire [  `ALU_SRCB_LENGTH - 1:0] ALUSrcBE;
     wire [    `ALU_OP_LENGTH - 1:0] ALUOpE;
     wire [`DATA_WIDTH - 1:0] PCE, InstE, ImmExtE, PCPlus4E, RD1E, RD2E, CsrReadE;
+    wire [`REG_LENGTH - 1:0] Rs1D, Rs2D, RdD;
     wire [`REG_LENGTH - 1:0] Rs1E, Rs2E, RdE;
     wire [   `CSR_LENGTH - 1:0] CsrAddrD;
+
+    assign Rs1D = InstD[19:15];
+    assign Rs2D = InstD[24:20];
+    assign RdD  = InstD[11:7];
 
     ysyx_23060184_RegIDEXE RegIDEXE (
         .clk(clock),
         .resetn(resetn),
+        // .clr(FlushE),
+        .Stall(StallE),
         .Dvalid(Dvalid),
         .Eready(Eready),
+        .Evalid(Evalid),
+        .Mready(Mready),
         .InstD(InstD),
         .RegWriteD(RegWriteD),
         .MemReadD(MemReadD),
@@ -278,9 +296,9 @@ module ysyx_23060184 (
         .ImmExtD(ImmExtD),
         .PCPlus4D(PCPlus4D),
         .CsrReadD(CsrReadD),
-        .Rs1D(InstD[19:15]),
-        .Rs2D(InstD[24:20]),
-        .RdD(InstD[11:7]),
+        .Rs1D(Rs1D),
+        .Rs2D(Rs2D),
+        .RdD(RdD),
         .CsrAddrD(CsrAddrD),
         .InstE(InstE),
         .RegWriteE(RegWriteE),
@@ -321,6 +339,7 @@ module ysyx_23060184 (
     ysyx_23060184_EXU EXU (
         .clk(clock),
         .rstn(resetn),
+        .Stall(StallE),
         .Dvalid(Dvalid),
         .Mready(Mready),
         .RD1(RD1E),
@@ -351,7 +370,7 @@ module ysyx_23060184 (
         .PCSrc(PCSrcE)
     );
 
-    wire [`DATA_WIDTH - 1:0] PCM, ALUResultM, PCTargetM, WriteDataM;
+    wire [`DATA_WIDTH - 1:0] PCM, ALUResultM, WriteDataM;
     wire RegWriteM, MemReadM, MemWriteM, CsrWriteM;
     wire [     `WMASK_LENGTH - 1:0] WmaskM;
     wire [   `ROPCODE_LENGTH - 1:0] RopcodeM;
@@ -366,6 +385,8 @@ module ysyx_23060184 (
         .resetn(resetn),
         .Evalid(Evalid),
         .Mready(Mready),
+        .Mvalid(Mvalid),
+        .Wready(Wready),
         .PCE(PCE),
         .InstE(InstE),
         .RegWriteE(RegWriteE),
@@ -404,14 +425,6 @@ module ysyx_23060184 (
    */
 
     wire [  `DATA_WIDTH - 1:0] lsu_araddr;
-    // wire                       d_arvalid;
-    // wire                       d_rready;
-    // wire [  `DATA_WIDTH - 1:0] d_awaddr;
-    // wire                       d_awvalid;
-    // wire [  `DATA_WIDTH - 1:0] d_wdata;
-    // wire [`WMASK_LENGTH - 1:0] d_wstrb;
-    // wire                       d_wvalid;
-    // wire                       d_bready;
 
     /*
       LSU related AXI4 signals End

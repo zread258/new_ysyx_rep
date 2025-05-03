@@ -3,6 +3,8 @@ module ysyx_23060184_RegEXMEM(
     input                                       resetn,
     input                                       Evalid,
     input                                       Mready,
+    input                                       Mvalid,
+    input                                       Wready,
     input           [`DATA_WIDTH - 1:0]         PCE,
     input           [`DATA_WIDTH - 1:0]         InstE,
     input                                       RegWriteE,
@@ -68,20 +70,23 @@ module ysyx_23060184_RegEXMEM(
             CsrReadM <= CsrReadE;
             ALUResultM <= ALUResultE;
             CsrAddrM <= CsrAddrE;
-        end 
+        end else if (Mvalid && Wready) begin
+            InstM <= `INST_NOP;
+            RegWriteM <= 0;
+            MemReadM <= 0;
+            MemWriteM <= 0;
+            CsrWriteM <= 0;
+            WmaskM <= 0;
+            RopcodeM <= 0;
+            ResultSrcM <= 0;
+            WriteDataM <= 0;
+            PCPlus4M <= 0;
+            RdM <= 0;
+            CsrReadM <= 0;
+            ALUResultM <= 0;
+        end
         // else begin
-        //     RegWriteM <= 0;
-        //     MemReadM <= 0;
-        //     MemWriteM <= 0;
-        //     CsrWriteM <= 0;
-        //     WmaskM <= 0;
-        //     RopcodeM <= 0;
-        //     ResultSrcM <= 0;
-        //     WriteDataM <= 0;
-        //     PCPlus4M <= 0;
-        //     RdM <= 0;
-        //     CsrReadM <= 0;
-        //     ALUResultM <= 0;
+
         // end
     end
     

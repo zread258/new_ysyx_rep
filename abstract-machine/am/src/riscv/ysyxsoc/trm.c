@@ -36,7 +36,8 @@ void halt(int code) {
 }
 
 void bootloader() {
-  memcpy(&vma_data_start , &lma_data_start, vma_data_end - vma_data_start);
+  size_t size = &vma_data_end - &vma_data_start;
+  memcpy(&vma_data_start , &lma_data_start, size);
 }
 
 void _trm_init() {

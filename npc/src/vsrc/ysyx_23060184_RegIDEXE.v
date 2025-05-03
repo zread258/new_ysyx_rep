@@ -1,8 +1,12 @@
 module ysyx_23060184_RegIDEXE (
     input                                       clk,
     input                                       resetn,
+    // input                                       clr,
+    input                                       Stall,
     input                                       Dvalid,
     input                                       Eready,
+    input                                       Evalid,
+    input                                       Mready,
     input           [`DATA_WIDTH - 1:0]         InstD,
     input                                       RegWriteD,
     input                                       MemReadD,
@@ -63,7 +67,7 @@ module ysyx_23060184_RegIDEXE (
     output reg      [`CSR_LENGTH - 1:0]         CsrAddrE
 );
 
-    always @(posedge clk) begin
+    always @ (posedge clk) begin
         if (~resetn) begin
             InstE <= 0;
             RegWriteE <= 1'b0;
@@ -92,7 +96,36 @@ module ysyx_23060184_RegIDEXE (
             Rs2E <= 0;
             RdE <= 0;
             CsrAddrE <= 0;
-        end else if (Dvalid && Eready) begin
+        end 
+        // else if (Dvalid && Eready && Stall) begin // Insert nop
+        //     InstE <= `INST_NOP; // add x0, zero, zero
+        //     RegWriteE <= 1'b0;
+        //     MemReadE <= 1'b0;
+        //     MemWriteE <= 1'b0;
+        //     CsrWriteE <= 1'b0;
+        //     JalE <= 1'b0;
+        //     JalrE <= 1'b0;
+        //     BneE <= 1'b0;
+        //     BeqE <= 1'b0;
+        //     BltsuE <= 1'b0;
+        //     BgesuE <= 1'b0;
+        //     EcallE <= 1'b0;
+        //     MretE <= 1'b0;
+        //     WmaskE <= 0;
+        //     RopcodeE <= 0;
+        //     ResultSrcE <= 0;
+        //     ALUOpE <= 0;
+        //     RD1E <= 0;
+        //     RD2E <= 0;
+        //     PCE <= PCD;
+        //     ImmExtE <= ImmExtD;
+        //     PCPlus4E <= PCPlus4D;
+        //     CsrReadE <= CsrReadD;
+        //     Rs1E <= Rs1D;
+        //     Rs2E <= Rs2D;
+        //     RdE <= RdD;
+        // end 
+        else if (Dvalid && Eready && ~Stall) begin
             InstE <= InstD;
             RegWriteE <= RegWriteD;
             MemReadE <= MemReadD;
@@ -122,7 +155,34 @@ module ysyx_23060184_RegIDEXE (
             Rs2E <= Rs2D;
             RdE <= RdD;
             CsrAddrE <= CsrAddrD;
-        end 
+        end else if (Evalid && Mready) begin
+            InstE <= `INST_NOP;
+            RegWriteE <= 1'b0;
+            MemReadE <= 1'b0;
+            MemWriteE <= 1'b0;
+            CsrWriteE <= 1'b0;
+            JalE <= 1'b0;
+            JalrE <= 1'b0;
+            BneE <= 1'b0;
+            BeqE <= 1'b0;
+            BltsuE <= 1'b0;
+            BgesuE <= 1'b0;
+            EcallE <= 1'b0;
+            MretE <= 1'b0;
+            WmaskE <= 0;
+            RopcodeE <= 0;
+            ResultSrcE <= 0;
+            ALUOpE <= 0;
+            RD1E <= 0;
+            RD2E <= 0;
+            PCE <= 0;
+            ImmExtE <= 0;
+            PCPlus4E <= 0;
+            CsrReadE <= 0;
+            Rs1E <= 0;
+            Rs2E <= 0;
+            RdE <= 0;
+        end
         else begin
             // RegWriteE <= 1'b0;
             // MemReadE <= 1'b0;

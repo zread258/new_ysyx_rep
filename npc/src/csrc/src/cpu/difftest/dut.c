@@ -36,6 +36,7 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
     return false;
   }
   for (int i = 0; i < reg_num; i++) {
+    // Log("reg[%d](%s) = " FMT_WORD, i, regs_name[i], ref_r->gpr[i]);
     if (ref_r->gpr[i] != cpu.gpr[i]) {
       Log("\nreg[%d](%s) is different at pc = " FMT_WORD "\nref = " FMT_WORD "\ndut = " FMT_WORD, i, regs_name[i], pc, ref_r->gpr[i], cpu.gpr[i]);
       return false;
@@ -79,33 +80,14 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
   handle = dlopen(ref_so_file, RTLD_LAZY);
   assert(handle);
 
-  // typedef void (*memcpy_func_ptr_t)(paddr_t, void*, size_t, bool);
-  // void* difftest_memcpy = dlsym(handle, "difftest_memcpy");
-  // memcpy_func_ptr_t ref_difftest_memcpy = reinterpret_cast<memcpy_func_ptr_t>(difftest_memcpy);
-
   ref_difftest_memcpy = (void (*)(paddr_t, void*, size_t, bool))dlsym(handle, "difftest_memcpy");
   assert(ref_difftest_memcpy);
-
-  // typedef void (*regcpy_func_ptr_t)(void*, bool);
-  // void* difftest_regcpy = dlsym(handle, "difftest_regcpy");
-  // regcpy_func_ptr_t ref_difftest_regcpy = reinterpret_cast<regcpy_func_ptr_t>(difftest_regcpy);
 
   ref_difftest_regcpy = (void (*)(void*, bool))dlsym(handle, "difftest_regcpy");
   assert(ref_difftest_regcpy);
 
-  // typedef void (*exec_func_ptr_t)(uint64_t);
-  // void* difftest_exec = dlsym(handle, "difftest_exec");
-  // exec_func_ptr_t ref_difftest_exec = reinterpret_cast<exec_func_ptr_t>(difftest_exec);
-
   ref_difftest_exec = (void (*)(uint64_t))dlsym(handle, "difftest_exec");
   assert(ref_difftest_exec);
-
-  // ref_difftest_raise_intr = dlsym(handle, "difftest_raise_intr");
-  // assert(ref_difftest_raise_intr);
-
-  // typedef void (*init_func_ptr_t)(int);
-  // void* difftest_init = dlsym(handle, "difftest_init");
-  // init_func_ptr_t ref_difftest_init = reinterpret_cast<init_func_ptr_t>(difftest_init);
 
   void (*ref_difftest_init)(int) = (void (*)(int))dlsym(handle, "difftest_init");
   assert(ref_difftest_init);
@@ -130,6 +112,11 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
 
 void difftest_step(vaddr_t pc, vaddr_t npc) {
   CPU_state ref_r;
+
+  if (get_inst() == NOP) {
+    // if the instruction is NOP, we should skip it, because it is not a real instruction
+    return;
+  }
 
   if (skip_dut_nr_inst > 0) {
     ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);

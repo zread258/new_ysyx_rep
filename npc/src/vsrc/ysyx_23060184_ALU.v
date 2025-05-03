@@ -1,6 +1,7 @@
 module ysyx_23060184_ALU #(DATA_WIDTH = 32) (
     input                           clk,
     input                           rstn,
+    input                           Stall,
     input                           Dvalid,
     input                           Mready,
     input [DATA_WIDTH - 1:0]        SrcA,
@@ -54,7 +55,7 @@ module ysyx_23060184_ALU #(DATA_WIDTH = 32) (
             Eready <= 1;
         end
 
-        if (Dvalid && Eready) begin
+        if (Dvalid && Eready && ~Stall) begin
             Evalid <= 1;
             Eready <= 0;
         end

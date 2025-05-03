@@ -25,6 +25,10 @@ typedef concat(riscv32, _ISADecodeInfo) ISADecodeInfo;
 // typedef word_t vaddr_t;
 // typedef word_t paddr_t;
 
+#define MAX_CLOCKS_PER_INST 200
+#define EBREAK 0x00100073
+#define NOP 0x00000013
+
 // monitor
 extern unsigned char isa_logo[];
 

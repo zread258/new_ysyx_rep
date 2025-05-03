@@ -34,6 +34,8 @@ module ysyx_23060184_ControlUnit (
     output                              MemRead,
     output                              MemWrite,
     output                              CsrWrite,
+    output                              Rs2Valid,
+    output                              JumpBranch,
     output [`WMASK_LENGTH - 1:0]        Wmask,
     output [`ROPCODE_LENGTH - 1:0]      Ropcode,
     output [`RESULT_SRC_LENGTH - 1:0]   ResultSrc,
@@ -230,5 +232,9 @@ module ysyx_23060184_ControlUnit (
             `EXT_OP_I;
 
     assign CsrWrite = (csrrw || csrrs) ? 1 : 0;
+
+    assign Rs2Valid = (branch || store || rtype) ? 1 : 0;
+
+    assign JumpBranch = (Jal || Jalr || branch) ? 1 : 0;
 
 endmodule 

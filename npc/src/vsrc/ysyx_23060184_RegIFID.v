@@ -2,8 +2,11 @@ module ysyx_23060184_RegIFID(
     input                                 clk,
     input                                 rstn,
     // input                                 clr,
+    input                                 Stall,
     input                                 Ivalid,
     input                                 Dready,
+    input                                 Dvalid,
+    input                                 Eready,
     input           [`DATA_WIDTH - 1:0]   InstF,
     input           [`DATA_WIDTH - 1:0]   PCPlus4F,
     input           [`DATA_WIDTH - 1:0]   PCF,
@@ -21,12 +24,11 @@ module ysyx_23060184_RegIFID(
             InstD <= InstF;
             PCPlus4D <= PCPlus4F;
             PCD <= PCF;
-        end 
-        // else begin
-        //     InstD <= 0;
-        //     PCPlus4D <= 0;
-        //     PCD <= 0;
-        // end
+        end else if (Dvalid && Eready && ~Stall) begin
+            InstD <= `INST_NOP;
+            PCPlus4D <= 0;
+            PCD <= 0;
+        end
     end
     
 endmodule //RegIFID

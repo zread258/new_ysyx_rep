@@ -113,26 +113,6 @@ module ysyx_23060184_LSU (
         end
     end
 
-    always @ (posedge clk) begin
-        if (idle && grant && MemRead) begin
-            arvalid <= 1;
-            idle <= 0;
-            if (Ropcode == `READ_WORD) begin
-                arsize <= 3'b010;
-            end else if (Ropcode == `READ_BYTE 
-                        || Ropcode == `READ_BYTEU) begin
-                arsize <= 3'b000;
-            end else if (Ropcode == `READ_HALF 
-                        || Ropcode == `READ_HALFU) begin
-                arsize <= 3'b001;
-            end
-        end
-        else if (idle && grant && MemWrite) begin
-            awvalid <= 1;
-            idle <= 0;
-        end
-    end
-
     always @(posedge clk) begin
         if (Mvalid && Wready) begin
             Mvalid <= 0;
@@ -148,6 +128,7 @@ module ysyx_23060184_LSU (
       .clk(clk),
       .raddr(ALUResult),
       .grant(soc),
+      .idle(idle),
       .Mvalid(Mvalid),
       .Mready(Mready),
 
@@ -169,10 +150,12 @@ module ysyx_23060184_LSU (
 
       .araddr(araddr),
       .arvalid(arvalid),
+      .arsize(arsize),
       .rready(rready),
       .wdata(wdata),
       .awaddr(awaddr),
       .awvalid(awvalid),
+      .awsize(awsize),
       .wstrb(wstrb),
       .wvalid(wvalid),
       .wlast(wlast),

@@ -2,8 +2,9 @@ module ysyx_23060184_IFU (
 
     input                               clk,
     input                               rstn,
-    // input                               Stall,
+    input                               Stall,
     input                               Branch,
+    input                               ControlStall,
 
 
     /*
@@ -52,7 +53,6 @@ module ysyx_23060184_IFU (
         PC Output Signals Begin
     */
 
-    output                             Pready,
     output [`DATA_WIDTH - 1:0]         pc,
 
     /*
@@ -99,11 +99,10 @@ module ysyx_23060184_IFU (
       .clk(clk),
       .rstn(rstn),
       .Branch(Branch),
-    //   .Stall(Stall),
+      .Stall(Stall),
       .Pvalid(Pvalid),
       .Ivalid(Ivalid),
       .Iready(Iready),
-      .Pready(Pready),
       .NPC(NPC),
       .PC(pc)
    );
@@ -118,6 +117,7 @@ module ysyx_23060184_IFU (
       .resetn(rstn),
       .A(pc),
       .grant(grant),
+      .ControlStall(ControlStall),
       .araddr(araddr),
       .arvalid(arvalid),
       .arready(arready),

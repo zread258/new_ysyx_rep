@@ -5,7 +5,7 @@ module ysyx_23060184_InstMem(
     // Input signals
     input [`DATA_WIDTH - 1:0]           A,
     input                               grant,
-    // input                               Stall,
+    input                               ControlStall,
 
 
     /* 
@@ -64,7 +64,7 @@ module ysyx_23060184_InstMem(
     end
 
     always @ (posedge clk) begin
-        if (idle && grant) begin
+        if (idle && grant && ~ControlStall) begin
             arvalid <= 1;
             idle <= 0;
         end
@@ -73,6 +73,7 @@ module ysyx_23060184_InstMem(
     always @ (posedge clk) begin
         if (Ivalid && Dready) begin
             Ivalid <= 0;
+            RD <= `INST_NOP;
         end
     end
 
