@@ -1,9 +1,13 @@
 ENTRY(_start)
-PHDRS { text PT_LOAD; data PT_LOAD; }
+PHDRS {
+  text PT_LOAD FLAGS(0x5);  /* RX */
+  data PT_LOAD FLAGS(0x6);  /* RW */
+}
+
 
 MEMORY {
-  mrom : ORIGIN = 0x20000000, LENGTH = 4K
-  sram : ORIGIN = 0x0f000000, LENGTH = 8K
+  mrom (rx)  : ORIGIN = 0x20000000, LENGTH = 4K
+  sram (rwx) : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
 SECTIONS {
@@ -33,7 +37,7 @@ SECTIONS {
     *(.bss*)
     *(.sbss*)
     *(.scommon)
-  }
+  } > sram
   _stack_top = ORIGIN(sram) + 0x100; 
   . = _stack_top + 0x100;
   _stack_pointer = .;

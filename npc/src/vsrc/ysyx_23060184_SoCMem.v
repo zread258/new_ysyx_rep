@@ -137,7 +137,6 @@ module ysyx_23060184_SoCMem (
             Mvalid <= 1;
             Mready <= 0;
             Drequest <= 0;
-            // $display("Load: addr=%h, rdata=%h, ropcode=%b", araddr, rdata, ropcode);
         end
     end
 
@@ -154,7 +153,6 @@ module ysyx_23060184_SoCMem (
             wvalid <= 0;
             wlast <= 0;
             bready <= 1;
-            // $display("Store: addr=%h, wdata=%h, wstrb=%b", awaddr, wdata, wstrb);
         end
     end
 
@@ -175,13 +173,6 @@ module ysyx_23060184_SoCMem (
         Narrow Transaction
     */
 
-    wire [5:0] r_bits_length = (arsize == 3'b010) ? 32 : 
-                        (arsize == 3'b001) ? 16 : 
-                        (arsize == 3'b000) ? 8 : 8;
-    wire [5:0] w_bits_length = (awsize == 3'b010) ? 32 : 
-                        (awsize == 3'b001) ? 16 : 
-                        (awsize == 3'b000) ? 8 : 8;
-
     // Calculate number of bytes per word
     localparam integer BYTES = `DATA_WIDTH / 8;
 
@@ -190,51 +181,40 @@ module ysyx_23060184_SoCMem (
                                  (BYTES == 4) ? 2 :
                                  (BYTES == 2) ? 1 : 0;
 
-    // Check if the transfer is narrow
-    wire narrow_transfer = (ropcode == `READ_WORD) ? 0 : 1;;
+    /* 
+    Choose the correct byte offset based on the transfer type for SRAM
+    Access SRAM would be 4 bytes aligned(SoC would change [1:0] to 00)
+    So we need to choose the correct byte offset based on the transfer type
+    */
+    wire sram = (raddr >= `SRAM_ADDR_BEGIN && raddr <= `SRAM_ADDR_END) ? 1 : 0;
+    reg [`DATA_WIDTH - 1:0] s_valid_data;
 
-    // // Calculate the offset start for the narrow transfer
-    // wire [BYTES:0] offset_start =  { raddr[1:0], 3'b000 };
-    // wire [BYTES+1:0] offset_end = offset_start + r_bits_length - 1;
+    assign s_valid_data =
+    (arsize == 3'b010) ? 
+        // 32‑bit access
+        rdata :
+    (arsize == 3'b001) ? 
+        // 16‑bit access, choose half‑word
+        (raddr[1:0] == 2'b00 ? {{16{1'b0}}, rdata[15:0]} :
+         raddr[1:0] == 2'b01 ? {{16{1'b0}}, rdata[23:8]} :
+         raddr[1:0] == 2'b10 ? {{16{1'b0}}, rdata[31:16]} :
+                          {{16{1'b0}}, rdata[31:16]}) :
+    (arsize == 3'b000) ?
+        // 8‑bit access, choose byte
+        (raddr[1:0] == 2'b00 ? {{24{1'b0}}, rdata[7:0]} :
+         raddr[1:0] == 2'b01 ? {{24{1'b0}}, rdata[15:8]} :
+         raddr[1:0] == 2'b10 ? {{24{1'b0}}, rdata[23:16]} :
+                          {{24{1'b0}}, rdata[31:24]}) :
+    // default / unsupported size
+    {`DATA_WIDTH{1'b0}};
 
-    // // Choose the correct byte offset based on the transfer type
-    reg [`DATA_WIDTH - 1:0] valid_data;
-    // assign valid_data = (raddr[1:0] == 2'b00) ? rdata :
-    //                     {0, rdata[offset_end:offset_start]};
+    wire [`DATA_WIDTH - 1:0] valid_data = (sram) ? s_valid_data: rdata;
 
-    // always @ (posedge clk) begin
-    // case (arsize)
-    //     3'b010: begin
-    //     // 32 bit：不管对齐，直接读全字
-    //     valid_data = rdata;
-    //     end
-    //     3'b001: begin
-    //     // 16 bit：根据低两位决定取哪 16 位
-    //     case (raddr[1:0])
-    //         2'b00: valid_data = {{16{1'b0}}, rdata[15:0]};
-    //         2'b01: valid_data = {{16{1'b0}}, rdata[23:8]};
-    //         2'b10: valid_data = {{16{1'b0}}, rdata[31:16]};
-    //         2'b11: valid_data = {{16{1'b0}}, rdata[31:16]}; // 通常最后越界当做最高半字
-    //     endcase
-    //     end
-    //     3'b000: begin
-    //     // 8 bit：根据低两位决定取哪 8 位
-    //     case (raddr[1:0])
-    //         2'b00: valid_data = {{24{1'b0}}, rdata[7:0]};
-    //         2'b01: valid_data = {{24{1'b0}}, rdata[15:8]};
-    //         2'b10: valid_data = {{24{1'b0}}, rdata[23:16]};
-    //         2'b11: valid_data = {{24{1'b0}}, rdata[31:24]};
-    //     endcase
-    //     end
-    //     default: valid_data = {`DATA_WIDTH{1'b0}};
-    // endcase
-    // end
-
-    assign result = (ropcode == `READ_WORD) ? rdata :
-                    (ropcode == `READ_HALF) ? {{16{rdata[15]}}, rdata[15:0]} :
-                    (ropcode == `READ_BYTE) ? {{24{rdata[7]}}, rdata[7:0]} :
-                    (ropcode == `READ_HALFU) ? {16'b0, rdata[15:0]} :
-                    (ropcode == `READ_BYTEU) ? {24'b0, rdata[7:0]} :
+    assign result = (ropcode == `READ_WORD) ? valid_data :
+                    (ropcode == `READ_HALF) ? {{16{valid_data[15]}}, valid_data[15:0]} :
+                    (ropcode == `READ_BYTE) ? {{24{valid_data[7]}}, valid_data[7:0]} :
+                    (ropcode == `READ_HALFU) ? {16'b0, valid_data[15:0]} :
+                    (ropcode == `READ_BYTEU) ? {24'b0, valid_data[7:0]} :
                     0;
 
 endmodule

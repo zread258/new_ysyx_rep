@@ -75,13 +75,15 @@ module ysyx_23060184_RegMEMWB(
         end 
         // else begin
         //     RegWriteW <= 0;
-        //     ResultSrcW <= 0;
-        //     PCPlus4W <= 0;
-        //     ReadDataW <= 0;
-        //     CsrReadW <= 0;
-        //     ALUResultW <= 0;
         //     RdW <= 0;
         // end
+
+        /* 
+        ToDo: Here are some problems, The RegWriteW is not reset
+        So, there may be double write. But if reset the RegWriteW
+        The Forwarding will not work, it needs more time to think
+        */
+        
     end
     
 endmodule //ysyx_23060184_RegMEMWB
