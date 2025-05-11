@@ -51,6 +51,8 @@ extern "C" {
 extern   Area        heap;
 void     putch       (char ch);
 void     halt        (int code) __attribute__((__noreturn__));
+void     _uart_init  ();
+void     bootloader  ();
 
 // -------------------- IOE: Input/Output Devices --------------------
 bool     ioe_init    (void);

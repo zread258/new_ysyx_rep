@@ -1,7 +1,8 @@
 TOPNAME=ysyxSoCFull
-INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/csrc/include
-INC_PATH += /home/csardas/ysyx-workbench/npc/include
-INC_PATH += /home/csardas/ysyx-workbench/npc/build/obj_dir
+NPC_HOME ?= $(shell pwd)
+INC_PATH ?= $(NPC_HOME)/include
+INC_PATH += $(NPC_HOME)/src/csrc/include
+INC_PATH += $(NPC_HOME)/build/obj_dir
 INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip
 # INC_PATH += $(NPC_HOME)/src/csrc/src/isa/riscv32/include
 INC_PATH += /usr/local/llvm-16/include
@@ -9,7 +10,7 @@ INC_PATH += /usr/local/llvm-16/include
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc -trace \
 				-O3 --x-assign fast --x-initial fast --noassert
-VERILATOR_INC_PATH ?= /home/csardas/ysyx-workbench/npc/src/vsrc/include
+VERILATOR_INC_PATH ?= src/vsrc/include
 VERILATOR_INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip/uart16550/rtl
 VERILATOR_INC_PATH += /home/csardas/ysyx-workbench/ysyxSoC/perip/spi/rtl
 
